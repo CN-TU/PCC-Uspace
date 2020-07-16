@@ -98,6 +98,7 @@ class CUDT {
   static int listen(UDTSOCKET u, int backlog);
   static UDTSOCKET accept(UDTSOCKET u, sockaddr* addr, int* addrlen);
   static int connect(UDTSOCKET u, const sockaddr* name, int namelen);
+  static int set_rate(UDTSOCKET u, const double rate);
   static int close(UDTSOCKET u);
   static int getpeername(UDTSOCKET u, sockaddr* name, int* namelen);
   static int getsockname(UDTSOCKET u, sockaddr* name, int* namelen);
@@ -186,6 +187,8 @@ class CUDT {
   // Returned value:
   //    None.
   void connect(const sockaddr* peer);
+
+  void set_rate(const double rate);
 
   // Functionality:
   //    Process the response handshake packet.

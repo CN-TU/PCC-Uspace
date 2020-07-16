@@ -179,6 +179,7 @@ class CUDTUnited {
   int listen(const UDTSOCKET u, const int& backlog);
   UDTSOCKET accept(const UDTSOCKET listen, sockaddr* addr, int* addrlen);
   int connect(const UDTSOCKET u, const sockaddr* name, const int& namelen);
+  int set_rate(const UDTSOCKET u, const double rate);
   int close(const UDTSOCKET u);
   int getpeername(const UDTSOCKET u, sockaddr* name, int* namelen);
   int getsockname(const UDTSOCKET u, sockaddr* name, int* namelen);

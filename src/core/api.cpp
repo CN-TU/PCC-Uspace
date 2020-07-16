@@ -753,6 +753,19 @@ int CUDTUnited::connect(const UDTSOCKET u,
   return 0;
 }
 
+int CUDTUnited::set_rate(const UDTSOCKET u,
+                        const double rate) {
+  CUDTSocket* s = locate(u);
+  if (NULL == s) {
+    throw CUDTException(5, 4, 0);
+  }
+
+  s->m_pUDT->set_rate(rate);
+
+  return 0;
+}
+
+
 void CUDTUnited::connect_complete(const UDTSOCKET u) {
   CUDTSocket* s = locate(u);
   if (NULL == s) {
@@ -1640,6 +1653,10 @@ int CUDT::connect(UDTSOCKET u, const sockaddr* name, int namelen) {
   }
 }
 
+int CUDT::set_rate(UDTSOCKET u, double rate) {
+  return s_UDTUnited.set_rate(u, rate);
+}
+
 int CUDT::close(UDTSOCKET u) {
   try {
     return s_UDTUnited.close(u);
@@ -1948,6 +1965,10 @@ UDTSOCKET accept(UDTSOCKET u, struct sockaddr* addr, int* addrlen) {
 
 int connect(UDTSOCKET u, const struct sockaddr* name, int namelen) {
   return CUDT::connect(u, name, namelen);
+}
+
+int set_rate(UDTSOCKET u, const double rate) {
+  return CUDT::set_rate(u, rate);
 }
 
 int close(UDTSOCKET u) {

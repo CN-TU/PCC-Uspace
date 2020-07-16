@@ -76,7 +76,8 @@ class QUIC_EXPORT_PRIVATE PccSender
     // Sender keeps increasing or decreasing sending rate until
     // utility decreases, then sender returns to PROBING mode.
     // TODO(tongmeng): a better name?
-    DECISION_MADE
+    DECISION_MADE,
+    FIXED_RATE
   };
 
   // Indicates whether sender should increase or decrease sending rate.
@@ -102,6 +103,8 @@ class QUIC_EXPORT_PRIVATE PccSender
   ~PccSender() override {}
 #endif
 #endif
+
+  void set_rate(const double rate);
 
 #ifdef QUIC_PORT
   // Start implementation of SendAlgorithmInterface.

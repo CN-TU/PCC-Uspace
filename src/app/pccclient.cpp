@@ -58,6 +58,9 @@ int main(int argc, char* argv[]) {
   UDTSOCKET client =
       UDT::socket(local->ai_family, local->ai_socktype, local->ai_protocol);
 
+  // Set initial rate to the minimum defined in pcc_sender
+  UDT::set_rate(client, 2097152);
+
 #ifdef WIN32
   // Windows UDP issue
   // For better performance, modify HKLM\System\CurrentControlSet\Services\Afd\

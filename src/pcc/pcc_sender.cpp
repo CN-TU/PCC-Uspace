@@ -212,6 +212,12 @@ void PccSender::OnPacketSent(QuicTime sent_time,
   interval_queue_.OnPacketSent(sent_time, packet_number, bytes);
 }
 
+void PccSender::set_rate(const double rate) {
+  sending_rate_ = rate;
+  mode_ = FIXED_RATE;
+  std::cout << "set_rate to " << rate << std::endl;
+}
+
 void PccSender::OnCongestionEvent(bool rtt_updated,
                                   QuicByteCount bytes_in_flight,
                                   QuicTime event_time,

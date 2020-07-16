@@ -906,7 +906,13 @@ POST_CONNECT:
   return 0;
 }
 
+void CUDT::set_rate(const double rate) {
+  cout << "spam" << endl;
+  pcc_sender->set_rate(rate);
+}
+
 void CUDT::connect(const sockaddr* peer, CHandShake* hs) {
+  std::cout << "yeah connect" << std::endl;
   CGuard cg(m_ConnectionLock);
 
   // Uses the smaller MSS between the peers
