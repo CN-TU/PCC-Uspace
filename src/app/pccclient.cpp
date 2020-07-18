@@ -59,6 +59,7 @@ int main(int argc, char* argv[]) {
       UDT::socket(local->ai_family, local->ai_socktype, local->ai_protocol);
 
   // Set initial rate to the minimum defined in pcc_sender
+  // UDT::set_rate(client, 2097152);
   UDT::set_rate(client, 2097152);
 
 #ifdef WIN32
@@ -154,7 +155,8 @@ DWORD WINAPI monitor(LPVOID s)
 
   UDT::TRACEINFO perf;
 
-  cout << "SendRate(Mb/s)\tRTT(ms)\tCTotal\tLoss\tRecvACK\tRecvNAK" << endl;
+  // cout << "SendRate(Mb/s)\tRTT(ms)\tCTotal\tLoss\tRecvACK\tRecvNAK" << endl;
+  cout << "SendRate(Mb/s)\tRTT(ms)\tCTotal\tLoss" << endl;
   int i=0;
   while (true) {
 #ifndef WIN32

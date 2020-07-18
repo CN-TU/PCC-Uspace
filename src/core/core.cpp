@@ -907,7 +907,6 @@ POST_CONNECT:
 }
 
 void CUDT::set_rate(const double rate) {
-  cout << "spam" << endl;
   pcc_sender->set_rate(rate);
 }
 

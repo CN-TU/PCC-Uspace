@@ -516,6 +516,9 @@ void PccSender::OnUtilityAvailable(
         EnterProbing();
       }
       break;
+    case FIXED_RATE:
+      std::cout << "got " << utility_info.size() << " utility infos, throughput: " << utility_info[0].actual_sending_rate << " goodput: " << utility_info[0].actual_good_sending_rate << ", utility_info[0].sending_rate: " << utility_info[0].sending_rate << ", utility_info[0].utility: " << utility_info[0].utility << std::endl;
+      break;
     case PROBING:
       if (CanMakeDecision(utility_info)) {
 #ifdef QUIC_PORT
@@ -712,6 +715,8 @@ bool PccSender::CanMakeDecision(
 
 void PccSender::EnterProbing() {
   switch (mode_) {
+    case FIXED_RATE:
+      abort();
     case STARTING:
       // Use half sending_rate_ as central probing rate.
       sending_rate_ = sending_rate_ * 0.5;

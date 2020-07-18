@@ -98,6 +98,9 @@ struct MonitorInterval {
 #endif
 
   // Sending rate.
+  QuicBandwidth actual_sending_rate_bps;
+  QuicBandwidth actual_good_sending_rate_bps;
+  // Sending rate.
   QuicBandwidth sending_rate;
   // True if calculating utility for this MonitorInterval.
   bool is_useful;
@@ -142,10 +145,13 @@ struct MonitorInterval {
 struct UtilityInfo {
   UtilityInfo();
   UtilityInfo(QuicBandwidth rate, float utility);
+  UtilityInfo(QuicBandwidth rate, float utility, QuicBandwidth actual_sending_rate, QuicBandwidth actual_good_sending_rate);
   ~UtilityInfo() {}
 
   QuicBandwidth sending_rate;
   float utility;
+  QuicBandwidth actual_sending_rate;
+  QuicBandwidth actual_good_sending_rate;
 };
 
 #ifdef QUIC_PORT

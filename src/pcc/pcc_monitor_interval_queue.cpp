@@ -167,6 +167,9 @@ UtilityInfo::UtilityInfo() : sending_rate(0.0), utility(0.0) {}
 UtilityInfo::UtilityInfo(QuicBandwidth rate, float utility)
     : sending_rate(rate), utility(utility) {}
 
+UtilityInfo::UtilityInfo(QuicBandwidth rate, float utility, QuicBandwidth actual_sending_rate, QuicBandwidth actual_good_sending_rate)
+    : sending_rate(rate), utility(utility), actual_sending_rate(actual_sending_rate), actual_good_sending_rate(actual_good_sending_rate) {}
+
 PccMonitorIntervalQueue::PccMonitorIntervalQueue(
     PccMonitorIntervalQueueDelegateInterface* delegate)
     : num_useful_intervals_(0),
@@ -322,7 +325,7 @@ void PccMonitorIntervalQueue::OnCongestionEvent(
       }
       // All the useful intervals should have available utilities now.
       utility_info.push_back(
-          UtilityInfo(interval.sending_rate, interval.utility));
+          UtilityInfo(interval.sending_rate, interval.utility, interval.actual_sending_rate_bps, interval.actual_good_sending_rate_bps));
     }
 #ifdef QUIC_PORT
     DCHECK_EQ(num_available_intervals_, utility_info.size());
@@ -443,7 +446,10 @@ bool PccMonitorIntervalQueue::CalculateUtility(MonitorInterval* interval) {
   float bytes_lost = static_cast<float>(interval->bytes_lost);
   float bytes_sent = static_cast<float>(interval->bytes_sent);
 
+  // std::cout << "bytes_sent " << bytes_sent << " mi_time_seconds " << mi_time_seconds << std::endl;
   float sending_rate_bps = bytes_sent * 8.0f / mi_time_seconds;
+  interval->actual_sending_rate_bps = sending_rate_bps;
+
   float sending_factor = kAlpha * pow(sending_rate_bps/kMegabit, kExponent);
 
   // Approximate the derivative at each point by computing the slope of RTT to
@@ -474,6 +480,8 @@ bool PccMonitorIntervalQueue::CalculateUtility(MonitorInterval* interval) {
       kLatencyCoefficient * 11330 * bytes_sent * (pow(rtt_penalty, 1));
 
   float loss_rate = bytes_lost / bytes_sent;
+  std::cout << "bytes_lost " << bytes_lost << " bytes_sent " << bytes_sent << " loss_rate " << loss_rate << std::endl;
+  interval->actual_good_sending_rate_bps = sending_rate_bps * (1-loss_rate);
   float loss_contribution =
       interval->n_packets * (11.35 * (pow((1 + loss_rate), 1) - 1));
   if (loss_rate <= 0.03) {
