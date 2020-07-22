@@ -67,9 +67,11 @@ int main(int argc, char* argv[]) {
 
   UDTSOCKET client =
       UDT::socket(local->ai_family, local->ai_socktype, local->ai_protocol);
+  cout << "client1 id " << client << endl;
 
   UDTSOCKET client2 =
       UDT::socket(local->ai_family, local->ai_socktype, local->ai_protocol);
+  cout << "client2 id " << client2 << endl;
 
   PccSender* pcc_sender = UDT::get_pcc_sender(client);
   pcc_sender->id = 1;
@@ -126,7 +128,7 @@ int main(int argc, char* argv[]) {
     pthread_t sending_thread;
     pthread_t sending_thread2;
     pthread_create(&sending_thread, NULL, send_things, &client);
-    pthread_create(&sending_thread2, NULL, send_things, &client);
+    pthread_create(&sending_thread2, NULL, send_things, &client2);
     void* val;
     void* val2;
     pthread_join(sending_thread, &val);
