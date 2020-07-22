@@ -113,6 +113,7 @@ class CUDT {
                         const void* optval,
                         int optlen);
   static int send(UDTSOCKET u, const char* buf, int len, int flags);
+  static PccSender* get_pcc_sender(UDTSOCKET u);
   static int recv(UDTSOCKET u, char* buf, int len, int flags);
   static int sendmsg(UDTSOCKET u,
                      const char* buf,
@@ -227,6 +228,7 @@ class CUDT {
   //    Actual size of data sent.
   int send(const char* data, const int& len);
 
+  PccSender* get_pcc_sender();
   // Functionality:
   //    Request UDT to receive data to a memory block "data" with size of "len".
   // Parameters:

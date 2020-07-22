@@ -172,6 +172,12 @@ class PccMonitorIntervalQueueDelegateInterface {
 // 'useful' intervals' utilities are available.
 class PccMonitorIntervalQueue {
  public:
+   std::deque<MonitorInterval> monitor_intervals_;
+  // Number of useful intervals in the queue.
+  size_t num_useful_intervals_;
+  // Number of useful intervals in the queue with available utilities.
+  size_t num_available_intervals_;
+
   explicit PccMonitorIntervalQueue(
 #ifdef QUIC_PORT
       PccMonitorIntervalQueueDelegateInterface* delegate);
@@ -246,11 +252,6 @@ class PccMonitorIntervalQueue {
   bool CalculateUtility(MonitorInterval* interval);
 #endif
 
-  std::deque<MonitorInterval> monitor_intervals_;
-  // Number of useful intervals in the queue.
-  size_t num_useful_intervals_;
-  // Number of useful intervals in the queue with available utilities.
-  size_t num_available_intervals_;
   // Delegate interface, not owned.
   PccMonitorIntervalQueueDelegateInterface* delegate_;
 };

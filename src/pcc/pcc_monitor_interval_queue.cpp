@@ -480,7 +480,7 @@ bool PccMonitorIntervalQueue::CalculateUtility(MonitorInterval* interval) {
       kLatencyCoefficient * 11330 * bytes_sent * (pow(rtt_penalty, 1));
 
   float loss_rate = bytes_lost / bytes_sent;
-  std::cout << "bytes_lost " << bytes_lost << " bytes_sent " << bytes_sent << " loss_rate " << loss_rate << std::endl;
+  // std::cout << "bytes_lost " << bytes_lost << " bytes_sent " << bytes_sent << " loss_rate " << loss_rate << std::endl;
   interval->actual_good_sending_rate_bps = sending_rate_bps * (1-loss_rate);
   float loss_contribution =
       interval->n_packets * (11.35 * (pow((1 + loss_rate), 1) - 1));

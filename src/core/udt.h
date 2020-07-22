@@ -58,6 +58,7 @@ written by
 #include <windows.h>
 #endif
 
+#include "../pcc/pcc_sender.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -392,6 +393,7 @@ UDT_API int setsockopt(UDTSOCKET u,
                        const void* optval,
                        int optlen);
 UDT_API int send(UDTSOCKET u, const char* buf, int len, int flags);
+UDT_API PccSender* get_pcc_sender(UDTSOCKET u);
 UDT_API int recv(UDTSOCKET u, char* buf, int len, int flags);
 UDT_API int sendmsg(UDTSOCKET u,
                     const char* buf,

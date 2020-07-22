@@ -63,6 +63,18 @@ class QUIC_EXPORT_PRIVATE PccSender
           {
 #endif
  public:
+
+  int id;
+  // Most recent utility used when making the last rate change decision.
+  UtilityInfo latest_utility_info_;
+
+   // Sending rate in Mbit/s for the next monitor intervals.
+  QuicBandwidth sending_rate_;
+
+  bool just_got_new_result = false;
+  pthread_cond_t new_result_cond = PTHREAD_COND_INITIALIZER;
+  pthread_mutex_t new_result_mutex = PTHREAD_MUTEX_INITIALIZER;
+
   // Sender's mode during a connection.
   enum SenderMode {
     // Initial phase of the connection. Sending rate gets doubled as
@@ -208,10 +220,6 @@ class QUIC_EXPORT_PRIVATE PccSender
 
   // Current mode of PccSender.
   SenderMode mode_;
-  // Sending rate in Mbit/s for the next monitor intervals.
-  QuicBandwidth sending_rate_;
-  // Most recent utility used when making the last rate change decision.
-  UtilityInfo latest_utility_info_;
   // Duration of the current monitor interval.
 #ifdef QUIC_PORT
   QuicTime::Delta monitor_duration_;

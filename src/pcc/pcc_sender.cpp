@@ -1,3 +1,5 @@
+#include <cassert>
+
 #ifdef QUIC_PORT
 #ifdef QUIC_PORT_LOCAL
 #include "net/quic/core/congestion_control/pcc_sender.h"
@@ -110,7 +112,7 @@ PccSender::PccSender(QuicTime initial_rtt_us,
                      QuicPacketCount initial_congestion_window,
                      QuicPacketCount max_congestion_window)
 #endif
-    : mode_(STARTING),
+    : mode_(STARTING), just_got_new_result (false),
 #ifdef QUIC_PORT
       sending_rate_(QuicBandwidth::FromBitsPerSecond(
           initial_congestion_window * kDefaultTCPMSS * kBitsPerByte *
@@ -215,7 +217,12 @@ void PccSender::OnPacketSent(QuicTime sent_time,
 void PccSender::set_rate(const double rate) {
   sending_rate_ = rate;
   mode_ = FIXED_RATE;
-  std::cout << "set_rate to " << rate << std::endl;
+
+  interval_queue_.monitor_intervals_.clear();
+  interval_queue_.num_useful_intervals_ = 0;
+  interval_queue_.num_available_intervals_ = 0;
+
+  std::cout << "id " << id << " set_rate to " << rate << std::endl;
 }
 
 void PccSender::OnCongestionEvent(bool rtt_updated,
@@ -517,7 +524,16 @@ void PccSender::OnUtilityAvailable(
       }
       break;
     case FIXED_RATE:
-      std::cout << "got " << utility_info.size() << " utility infos, throughput: " << utility_info[0].actual_sending_rate << " goodput: " << utility_info[0].actual_good_sending_rate << ", utility_info[0].sending_rate: " << utility_info[0].sending_rate << ", utility_info[0].utility: " << utility_info[0].utility << std::endl;
+      // assert(utility_info.size() == 1);
+      std::cout << "id " << id << " got " << utility_info.size() << " utility infos, throughput: " << utility_info[0].actual_sending_rate << " goodput: " << utility_info[0].actual_good_sending_rate << ", utility_info[0].sending_rate: " << utility_info[0].sending_rate << ", utility_info[0].utility: " << utility_info[0].utility << std::endl;
+
+      pthread_mutex_lock(&new_result_mutex);
+      if (!just_got_new_result) {
+        latest_utility_info_ = utility_info[1];
+        just_got_new_result = true;
+      }
+      pthread_cond_broadcast(&new_result_cond);
+      pthread_mutex_unlock(&new_result_mutex);
       break;
     case PROBING:
       if (CanMakeDecision(utility_info)) {
@@ -614,7 +630,7 @@ bool PccSender::CreateUsefulInterval() const {
   // intervals in the queue; while in PROBING mode, there should be at most
   // 2 * kNumIntervalGroupsInProbing.
   size_t max_num_useful =
-      (mode_ == PROBING) ? 2 * kNumIntervalGroupsInProbing : 1;
+      (mode_ == FIXED_RATE) ? 1 : ((mode_ == PROBING) ? 2 * kNumIntervalGroupsInProbing : 1);
   return interval_queue_.num_useful_intervals() < max_num_useful;
 }
 

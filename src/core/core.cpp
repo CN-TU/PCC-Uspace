@@ -1114,6 +1114,10 @@ int32_t CUDT::GetNextSeqNo() {
   return m_iSndCurrSeqNo;
 }
 
+PccSender* CUDT::get_pcc_sender() {
+  return pcc_sender;
+}
+
 int CUDT::send(const char* data, const int& len) {
   if (UDT_DGRAM == m_iSockType) {
     throw CUDTException(5, 10, 0);

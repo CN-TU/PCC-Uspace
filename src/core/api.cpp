@@ -1745,6 +1745,11 @@ int CUDT::send(UDTSOCKET u, const char* buf, int len, int) {
   }
 }
 
+PccSender* CUDT::get_pcc_sender(UDTSOCKET u) {
+  CUDT* udt = s_UDTUnited.lookup(u);
+  return udt->get_pcc_sender();
+}
+
 int CUDT::recv(UDTSOCKET u, char* buf, int len, int) {
   try {
     CUDT* udt = s_UDTUnited.lookup(u);
@@ -2001,6 +2006,10 @@ int setsockopt(UDTSOCKET u,
 
 int send(UDTSOCKET u, const char* buf, int len, int flags) {
   return CUDT::send(u, buf, len, flags);
+}
+
+PccSender* get_pcc_sender(UDTSOCKET u) {
+  return CUDT::get_pcc_sender(u);
 }
 
 int recv(UDTSOCKET u, char* buf, int len, int flags) {

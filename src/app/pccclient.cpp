@@ -22,11 +22,21 @@ void* monitor(void*);
 DWORD WINAPI monitor(LPVOID);
 #endif
 
+void* wait_for_new_result(void*);
+void* send_things(void*);
+
 void intHandler(int dummy) {
   //TODO (nathan jay): Print useful summary statistics.
   exit(0);
 }
 
+struct socket_couple {
+  PccSender* pcc_sender1;
+  PccSender* pcc_sender2;
+  bool reversed;
+};
+
+pthread_mutex_t result_waiter_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int main(int argc, char* argv[]) {
   if (argc < 4 || 0 == atoi(argv[3])) {
@@ -58,9 +68,16 @@ int main(int argc, char* argv[]) {
   UDTSOCKET client =
       UDT::socket(local->ai_family, local->ai_socktype, local->ai_protocol);
 
-  // Set initial rate to the minimum defined in pcc_sender
-  // UDT::set_rate(client, 2097152);
-  UDT::set_rate(client, 2097152);
+  UDTSOCKET client2 =
+      UDT::socket(local->ai_family, local->ai_socktype, local->ai_protocol);
+
+  PccSender* pcc_sender = UDT::get_pcc_sender(client);
+  pcc_sender->id = 1;
+  pcc_sender->set_rate(2097152);
+
+  PccSender* pcc_sender2 = UDT::get_pcc_sender(client2);
+  pcc_sender2->id = 2;
+  pcc_sender2->set_rate(2097152*2);
 
 #ifdef WIN32
   // Windows UDP issue
@@ -82,14 +99,15 @@ int main(int argc, char* argv[]) {
     cout << "connect: " << UDT::getlasterror().getErrorMessage() << endl;
     return 0;
   }
+  // connect to the server, implict bind
+  if (UDT::ERROR == UDT::connect(client2, peer->ai_addr, peer->ai_addrlen)) {
+    cout << "connect: " << UDT::getlasterror().getErrorMessage() << endl;
+    return 0;
+  }
   freeaddrinfo(peer);
 
   // using CC method
   int temp;
-
-  int size = 100000;
-  char* data = new char[size];
-  bzero(data, size);
 
 #ifndef WIN32
   pthread_create(new pthread_t, NULL, monitor, &client);
@@ -98,24 +116,27 @@ int main(int argc, char* argv[]) {
 #endif
 
   if (should_send) {
-    while (true) {
-      int ssize = 0;
-      int ss;
-      while (ssize < size) {
-        if (UDT::ERROR ==
-            (ss = UDT::send(client, data + ssize, size - ssize, 0))) {
-          cout << "send:" << UDT::getlasterror().getErrorMessage() << endl;
-          break;
-        }
 
-        ssize += ss;
-      }
+    struct socket_couple sc1 = {pcc_sender, pcc_sender2, false};
+    struct socket_couple sc2 = {pcc_sender2, pcc_sender, true};
 
-      if (ssize < size) {
-        break;
-      }
-    }
+    pthread_create(new pthread_t, NULL, wait_for_new_result, &sc1);
+    pthread_create(new pthread_t, NULL, wait_for_new_result, &sc2);
+
+    pthread_t sending_thread;
+    pthread_t sending_thread2;
+    pthread_create(&sending_thread, NULL, send_things, &client);
+    pthread_create(&sending_thread2, NULL, send_things, &client);
+    void* val;
+    void* val2;
+    pthread_join(sending_thread, &val);
+    pthread_join(sending_thread2, &val2);
+
   } else {
+    int size = 100000;
+    char* data = new char[size];
+    bzero(data, size);
+
     while (true) {
       int rsize = 0;
       int rs;
@@ -133,16 +154,99 @@ int main(int argc, char* argv[]) {
         break;
       }
     }
+    UDT::close(client);
+    delete [] data;
   }
-
-  UDT::close(client);
-
-  delete [] data;
-
-  // use this function to release the UDT library
   UDT::cleanup();
 
   return 1;
+}
+
+bool loss_in_both_once = false;
+bool loss_again = false;
+uint32_t already_received_results = 0;
+
+void* wait_for_new_result(void* arg) {
+
+  struct socket_couple sc = *(socket_couple*) arg;
+
+  PccSender* pcc_sender = sc.pcc_sender1;
+  PccSender* pcc_sender2 = sc.pcc_sender2;
+  bool reversed = sc.reversed;
+
+  while (true) {
+    pthread_mutex_lock(&(pcc_sender->new_result_mutex));
+    while (!pcc_sender->just_got_new_result) {
+      pthread_cond_wait(&(pcc_sender->new_result_cond), &(pcc_sender->new_result_mutex));
+
+      pcc_sender->just_got_new_result = false;
+
+      pthread_mutex_lock(&result_waiter_mutex);
+      already_received_results += 1;
+      if (already_received_results == 2) {
+        already_received_results = 0;
+
+        PccSender* first_sender;
+        PccSender* second_sender;
+
+        if (!reversed) {
+          first_sender = pcc_sender;
+          second_sender = pcc_sender2;
+        } else {
+          first_sender = pcc_sender2;
+          second_sender = pcc_sender;
+        }
+        bool loss_in_both = (first_sender->latest_utility_info_.actual_sending_rate > first_sender->latest_utility_info_.actual_good_sending_rate) && (second_sender->latest_utility_info_.actual_sending_rate > second_sender->latest_utility_info_.actual_good_sending_rate);
+
+        if (!loss_in_both_once && loss_in_both) {
+          loss_in_both_once = loss_in_both;
+        }
+        if (loss_in_both_once && loss_in_both && !loss_again) {
+          loss_again = loss_in_both;
+        }
+
+        double throughput_rate_first = first_sender->latest_utility_info_.actual_good_sending_rate/first_sender->latest_utility_info_.actual_sending_rate;
+        double throughput_rate_second = second_sender->latest_utility_info_.actual_good_sending_rate/second_sender->latest_utility_info_.actual_sending_rate;
+
+        cout << "loss_once " << loss_in_both_once << " loss_again " << loss_again << " throughput_rate_first " << throughput_rate_first << " throughput_rate_second " << throughput_rate_second << " loss_ratio " << throughput_rate_first/throughput_rate_second << endl;
+
+        if (!loss_again) {
+          first_sender->set_rate(first_sender->sending_rate_ * 2);
+          second_sender->set_rate(second_sender->sending_rate_ * 2);
+        }
+      }
+      pthread_mutex_unlock(&result_waiter_mutex);
+
+    }
+    pthread_mutex_unlock(&(pcc_sender->new_result_mutex));
+  }
+}
+
+void* send_things(void* arg) {
+  UDTSOCKET client = *(UDTSOCKET*) arg;
+
+  int size = 100000;
+  char* data = new char[size];
+  bzero(data, size);
+
+  while (true) {
+    int ssize = 0;
+    int ss;
+    while (ssize < size) {
+      if (UDT::ERROR ==
+          (ss = UDT::send(client, data + ssize, size - ssize, 0))) {
+        cout << "send:" << UDT::getlasterror().getErrorMessage() << endl;
+        break;
+      }
+
+      ssize += ss;
+    }
+
+    if (ssize < size) {
+      break;
+    }
+  }
+  UDT::close(client);
 }
 
 #ifndef WIN32
