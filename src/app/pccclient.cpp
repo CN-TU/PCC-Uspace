@@ -166,7 +166,9 @@ int main(int argc, char* argv[]) {
 
 bool loss_in_both_once = false;
 bool loss_again = false;
-uint32_t already_received_results = 0;
+
+bool received_first = false;
+bool received_second = false;
 
 void* wait_for_new_result(void* arg) {
 
@@ -184,9 +186,14 @@ void* wait_for_new_result(void* arg) {
       pcc_sender->just_got_new_result = false;
 
       pthread_mutex_lock(&result_waiter_mutex);
-      already_received_results += 1;
-      if (already_received_results == 2) {
-        already_received_results = 0;
+      if (!reversed) {
+        received_first = true;
+      } else {
+        received_second = true;
+      }
+      if (received_first && received_second) {
+        received_first = false;
+        received_second = false;
 
         PccSender* first_sender;
         PccSender* second_sender;
@@ -200,11 +207,11 @@ void* wait_for_new_result(void* arg) {
         }
         bool loss_in_both = (first_sender->latest_utility_info_.actual_sending_rate > first_sender->latest_utility_info_.actual_good_sending_rate) && (second_sender->latest_utility_info_.actual_sending_rate > second_sender->latest_utility_info_.actual_good_sending_rate);
 
-        if (!loss_in_both_once && loss_in_both) {
-          loss_in_both_once = loss_in_both;
-        }
         if (loss_in_both_once && loss_in_both && !loss_again) {
           loss_again = loss_in_both;
+        }
+        if (!loss_in_both_once && loss_in_both) {
+          loss_in_both_once = loss_in_both;
         }
 
         double throughput_rate_first = first_sender->latest_utility_info_.actual_good_sending_rate/first_sender->latest_utility_info_.actual_sending_rate;

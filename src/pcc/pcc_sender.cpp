@@ -529,7 +529,7 @@ void PccSender::OnUtilityAvailable(
 
       pthread_mutex_lock(&new_result_mutex);
       if (!just_got_new_result) {
-        latest_utility_info_ = utility_info[1];
+        latest_utility_info_ = utility_info[0];
         just_got_new_result = true;
       }
       pthread_cond_broadcast(&new_result_cond);
