@@ -112,7 +112,7 @@ PccSender::PccSender(QuicTime initial_rtt_us,
                      QuicPacketCount initial_congestion_window,
                      QuicPacketCount max_congestion_window)
 #endif
-    : mode_(STARTING), just_got_new_result (false),
+    : mode_(STARTING), just_got_new_result(false), gen((std::random_device())()), dis(0.5, 2.0),
 #ifdef QUIC_PORT
       sending_rate_(QuicBandwidth::FromBitsPerSecond(
           initial_congestion_window * kDefaultTCPMSS * kBitsPerByte *
@@ -245,6 +245,8 @@ void PccSender::OnCongestionEvent(bool rtt_updated,
     avg_rtt_us = rtt_stats_->initial_rtt_us();
 #endif
   } else {
+    min_rtt = std::min(min_rtt, (double) rtt);
+    // assert(min_rtt > 0);
 #ifndef QUIC_PORT
     if (avg_rtt_ == 0) {
         avg_rtt_ = rtt;
@@ -279,10 +281,14 @@ bool PccSender::CanSend(QuicByteCount bytes_in_flight) {
 }
 #endif
 
-QuicBandwidth PccSender::PacingRate(QuicByteCount bytes_in_flight) const {
+QuicBandwidth PccSender::PacingRate(QuicByteCount bytes_in_flight) {
   QuicBandwidth result =
       interval_queue_.empty() ? sending_rate_
                               : interval_queue_.current().sending_rate;
+  if (mode_==FIXED_RATE) {
+    double random_number = dis(gen);
+    result *= random_number;
+  }
   return result;
 }
 
@@ -504,6 +510,15 @@ void PccSender::OnUtilityAvailable(
   std::cerr << "OnUtilityAvailable" << std::endl;
 #endif
   switch (mode_) {
+    case VEGAS_LIKE:
+      if (utility_info[0].utility > min_rtt + 5) {
+        // decrease
+        sending_rate_ = sending_rate_ * (1.0 / (1 + kProbingStepSize));
+      } else {
+        // increase
+        sending_rate_ = sending_rate_ * (1.0 / (1 - kProbingStepSize));
+      }
+      break;
     case STARTING:
 #ifdef QUIC_PORT
       DCHECK_EQ(1u, utility_info.size());
@@ -732,6 +747,8 @@ bool PccSender::CanMakeDecision(
 void PccSender::EnterProbing() {
   switch (mode_) {
     case FIXED_RATE:
+      abort();
+    case VEGAS_LIKE:
       abort();
     case STARTING:
       // Use half sending_rate_ as central probing rate.

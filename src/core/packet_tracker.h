@@ -31,6 +31,7 @@ struct MessageRecord {
 template<typename SeqNoType, typename IdType>
 class PacketRecord {
  public:
+
   PacketRecord(CPacket& packet, PacketState initial_packet_state);
   ~PacketRecord();
   void UpdateRecord(PacketState new_packet_state,

@@ -1563,12 +1563,14 @@ void CUDT::sendCtrl(const int& pkttype,
   }
 }
 
-void CUDT::add_to_loss_record(int32_t loss1, int32_t loss2) {
+void CUDT::add_to_loss_record(int32_t loss1, int32_t loss2, bool lock) {
   //TODO: loss record does not have lock, this might cause problem
 
+  // cout << "add_to_loss_record loss1 " << loss1 << " loss2 " << loss2 << endl;
   AckedPacketVector acked_packets;
   LostPacketVector lost_packets;
-  pcc_sender_lock.lock();
+  if (lock)
+    pcc_sender_lock.lock();
   for (int loss = loss1; loss <= loss2; ++loss) {
     int32_t msg_no = packet_tracker_->GetPacketLastMsgNo(loss);
     PacketId pkt_id = packet_tracker_->GetPacketId(loss, msg_no);
@@ -1583,7 +1585,8 @@ void CUDT::add_to_loss_record(int32_t loss1, int32_t loss2) {
   }
   pcc_sender->OnCongestionEvent(true, 0, CTimer::getTime(), 0, acked_packets,
                                 lost_packets);
-  pcc_sender_lock.unlock();
+  if (lock)
+    pcc_sender_lock.unlock();
 
 #ifdef EXPERIMENTAL_FEATURE_CONTINOUS_SEND
   pthread_mutex_lock(&m_LossrecordLock);
@@ -1622,6 +1625,14 @@ void CUDT::ProcessAck(CPacket& ctrlpkt) {
     pcc_sender_lock.unlock();
     return;
   }
+
+  // cout << "seq_no " << seq_no << "m_iSndLastAck " << m_iSndLastAck << endl;
+  int32_t lost_packet_number = seq_no-m_iSndLastAck-1;
+  if (lost_packet_number > 0) {
+    // cout << "lost_packet_number " << lost_packet_number << " seq_no " << seq_no << " m_iSndLastAck " << m_iSndLastAck << endl;
+    add_to_loss_record(m_iSndLastAck+1, m_iSndLastAck+lost_packet_number, false);
+  }
+  m_iSndLastAck = seq_no;
 
   AckedPacketVector acked_packets;
   LostPacketVector lost_packets;

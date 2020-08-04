@@ -166,12 +166,20 @@ class PccMonitorIntervalQueueDelegateInterface {
 };
 #endif
 
+enum UtilityMode {
+  PCC,
+  PCC_CLASSIC,
+  VEGAS
+};
+
+
 // PccMonitorIntervalQueue contains a queue of MonitorIntervals.
 // New MonitorIntervals are added to the tail of the queue.
 // Existing MonitorIntervals are removed from the queue when all
 // 'useful' intervals' utilities are available.
 class PccMonitorIntervalQueue {
  public:
+  UtilityMode cc_mode = PCC;
    std::deque<MonitorInterval> monitor_intervals_;
   // Number of useful intervals in the queue.
   size_t num_useful_intervals_;

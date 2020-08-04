@@ -33,9 +33,12 @@ void intHandler(int dummy) {
 struct socket_couple {
   PccSender* pcc_sender1;
   PccSender* pcc_sender2;
+  int connection_id_sender1;
+  int connection_id_sender2;
   bool reversed;
 };
 
+#define MIN_RATE 100000.0
 pthread_mutex_t result_waiter_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int main(int argc, char* argv[]) {
@@ -75,11 +78,11 @@ int main(int argc, char* argv[]) {
 
   PccSender* pcc_sender = UDT::get_pcc_sender(client);
   pcc_sender->id = 1;
-  pcc_sender->set_rate(2097152);
+  pcc_sender->set_rate(MIN_RATE);
 
   PccSender* pcc_sender2 = UDT::get_pcc_sender(client2);
   pcc_sender2->id = 2;
-  pcc_sender2->set_rate(2097152*2);
+  pcc_sender2->set_rate(MIN_RATE*2);
 
 #ifdef WIN32
   // Windows UDP issue
@@ -108,9 +111,6 @@ int main(int argc, char* argv[]) {
   }
   freeaddrinfo(peer);
 
-  // using CC method
-  int temp;
-
 #ifndef WIN32
   pthread_create(new pthread_t, NULL, monitor, &client);
 #else
@@ -119,8 +119,8 @@ int main(int argc, char* argv[]) {
 
   if (should_send) {
 
-    struct socket_couple sc1 = {pcc_sender, pcc_sender2, false};
-    struct socket_couple sc2 = {pcc_sender2, pcc_sender, true};
+    struct socket_couple sc1 = {pcc_sender, pcc_sender2, client, client2, false};
+    struct socket_couple sc2 = {pcc_sender2, pcc_sender, client2, client, true};
 
     pthread_create(new pthread_t, NULL, wait_for_new_result, &sc1);
     pthread_create(new pthread_t, NULL, wait_for_new_result, &sc2);
@@ -198,18 +198,35 @@ void* wait_for_new_result(void* arg) {
         PccSender* first_sender;
         PccSender* second_sender;
 
+        int first_connection_id = -1;
+        int second_connection_id = -1;
+
         if (!reversed) {
           first_sender = pcc_sender;
           second_sender = pcc_sender2;
+          first_connection_id = sc.connection_id_sender1;
+          second_connection_id = sc.connection_id_sender2;
         } else {
           first_sender = pcc_sender2;
           second_sender = pcc_sender;
+          first_connection_id = sc.connection_id_sender2;
+          second_connection_id = sc.connection_id_sender1;
         }
         bool loss_in_both = (first_sender->latest_utility_info_.actual_sending_rate > first_sender->latest_utility_info_.actual_good_sending_rate) && (second_sender->latest_utility_info_.actual_sending_rate > second_sender->latest_utility_info_.actual_good_sending_rate);
 
-        if (loss_in_both_once && loss_in_both && !loss_again) {
-          loss_again = loss_in_both;
+        if (!loss_in_both) {
+          loss_in_both_once = false;
+          loss_again = false;
         }
+
+        // if (loss_in_both_once && loss_in_both && !loss_again) {
+        //   loss_again = loss_in_both;
+        //   UDT::close(second_connection_id);
+        //   double current_rate = first_sender->sending_rate_;
+        //   first_sender->set_rate(current_rate/2/2*1.5);
+        //   first_sender->mode_ = PccSender::SenderMode::VEGAS_LIKE;
+        //   break;
+        // }
         if (!loss_in_both_once && loss_in_both) {
           loss_in_both_once = loss_in_both;
         }
@@ -219,10 +236,15 @@ void* wait_for_new_result(void* arg) {
 
         cout << "loss_once " << loss_in_both_once << " loss_again " << loss_again << " throughput_rate_first " << throughput_rate_first << " throughput_rate_second " << throughput_rate_second << " loss_ratio " << throughput_rate_first/throughput_rate_second << endl;
 
+        double new_first_rate = first_sender->sending_rate_;
+        double new_second_rate = second_sender->sending_rate_;
         if (!loss_again) {
-          first_sender->set_rate(first_sender->sending_rate_ * 2);
-          second_sender->set_rate(second_sender->sending_rate_ * 2);
+          new_first_rate *= 2;
+          new_second_rate *= 2;
         }
+
+        first_sender->set_rate(new_first_rate);
+        second_sender->set_rate(new_second_rate);
       }
       pthread_mutex_unlock(&result_waiter_mutex);
 
@@ -256,6 +278,7 @@ void* send_things(void* arg) {
     }
   }
   UDT::close(client);
+  return 0;
 }
 
 #ifndef WIN32

@@ -605,7 +605,7 @@ class CUDT {
   int packData(CPacket& packet, uint64_t& ts);
   int processData(CUnit* unit);
   int listen(sockaddr* addr, CPacket& packet);
-  void add_to_loss_record(int32_t loss1, int32_t loss2);
+  void add_to_loss_record(int32_t loss1, int32_t loss2, bool lock=true);
   uint64_t deadlines[MAX_MONITOR];
   uint64_t allocated_times_[MAX_MONITOR];
   int32_t GetNextSeqNo();

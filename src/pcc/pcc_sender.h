@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <queue>
+#include <random>
 
 #ifdef QUIC_PORT
 #include "base/macros.h"
@@ -63,6 +64,12 @@ class QUIC_EXPORT_PRIVATE PccSender
           {
 #endif
  public:
+  // Queue of monitor intervals with pending utilities.
+  PccMonitorIntervalQueue interval_queue_;
+
+  double min_rtt = std::numeric_limits<double>::infinity();
+  std::mt19937 gen;
+  std::uniform_real_distribution<double> dis;
 
   int id;
   // Most recent utility used when making the last rate change decision.
@@ -89,8 +96,14 @@ class QUIC_EXPORT_PRIVATE PccSender
     // utility decreases, then sender returns to PROBING mode.
     // TODO(tongmeng): a better name?
     DECISION_MADE,
-    FIXED_RATE
+    FIXED_RATE,
+    VEGAS_LIKE
   };
+
+  bool lost_at_least_one_packet_already = false;
+
+  // Current mode of PccSender.
+  SenderMode mode_;
 
   // Indicates whether sender should increase or decrease sending rate.
   enum RateChangeDirection { INCREASE, DECREASE };
@@ -158,7 +171,7 @@ class QUIC_EXPORT_PRIVATE PccSender
 #ifdef QUIC_PORT
   QuicBandwidth PacingRate(QuicByteCount bytes_in_flight) const override;
 #else
-  QuicBandwidth PacingRate(QuicByteCount bytes_in_flight) const;
+  QuicBandwidth PacingRate(QuicByteCount bytes_in_flight);
 #endif
 #ifdef QUIC_PORT
   QuicBandwidth BandwidthEstimate() const override;
@@ -218,8 +231,6 @@ class QUIC_EXPORT_PRIVATE PccSender
   // Set the sending rate when entering DECISION_MADE from PROBING mode.
   void EnterDecisionMade(QuicBandwidth new_rate);
 
-  // Current mode of PccSender.
-  SenderMode mode_;
   // Duration of the current monitor interval.
 #ifdef QUIC_PORT
   QuicTime::Delta monitor_duration_;
@@ -230,8 +241,6 @@ class QUIC_EXPORT_PRIVATE PccSender
   RateChangeDirection direction_;
   // Number of rounds sender remains in current mode.
   size_t rounds_;
-  // Queue of monitor intervals with pending utilities.
-  PccMonitorIntervalQueue interval_queue_;
   // Maximum congestion window in bits, used to cap sending rate.
   uint32_t max_cwnd_bits_;
   // The current average of several utility gradients.
