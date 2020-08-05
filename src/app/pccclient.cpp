@@ -214,19 +214,19 @@ void* wait_for_new_result(void* arg) {
         }
         bool loss_in_both = (first_sender->latest_utility_info_.actual_sending_rate > first_sender->latest_utility_info_.actual_good_sending_rate) && (second_sender->latest_utility_info_.actual_sending_rate > second_sender->latest_utility_info_.actual_good_sending_rate);
 
-        if (!loss_in_both) {
-          loss_in_both_once = false;
-          loss_again = false;
-        }
-
-        // if (loss_in_both_once && loss_in_both && !loss_again) {
-        //   loss_again = loss_in_both;
-        //   UDT::close(second_connection_id);
-        //   double current_rate = first_sender->sending_rate_;
-        //   first_sender->set_rate(current_rate/2/2*1.5);
-        //   first_sender->mode_ = PccSender::SenderMode::VEGAS_LIKE;
-        //   break;
+        // if (!loss_in_both) {
+        //   loss_in_both_once = false;
+        //   loss_again = false;
         // }
+
+        if (loss_in_both_once && loss_in_both && !loss_again) {
+          loss_again = loss_in_both;
+          // UDT::close(second_connection_id);
+          // double current_rate = first_sender->sending_rate_;
+          // first_sender->set_rate(current_rate/2/2*1.5);
+          // first_sender->mode_ = PccSender::SenderMode::VEGAS_LIKE;
+          // break;
+        }
         if (!loss_in_both_once && loss_in_both) {
           loss_in_both_once = loss_in_both;
         }
