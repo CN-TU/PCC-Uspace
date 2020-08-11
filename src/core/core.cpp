@@ -1583,16 +1583,9 @@ void CUDT::add_to_loss_record(int32_t loss1, int32_t loss2, bool lock) {
     packet_tracker_->OnPacketLoss(loss, msg_no);
     ++m_iSndLossTotal;
   }
-  if (!(pcc_sender->lost_at_least_one_packet_already) && pcc_sender->mode_ == PccSender::SenderMode::FIXED_RATE) {
-    auto first_interval = pcc_sender->interval_queue_.monitor_intervals_.front();
-    UtilityInfo dummy_utility = UtilityInfo(1, 1, 1, 0.5);
-    vector<UtilityInfo> dummy_utility_vector;
-    dummy_utility_vector.push_back(dummy_utility);
-    pcc_sender->OnUtilityAvailable(dummy_utility_vector);
-  }
-  pcc_sender->lost_at_least_one_packet_already = true;
-  pcc_sender->OnCongestionEvent(true, 0, CTimer::getTime(), 0, acked_packets,
-                                lost_packets);
+
+  pcc_sender->OnCongestionEvent(true, 0, CTimer::getTime(), 0, acked_packets,lost_packets);
+
   if (lock)
     pcc_sender_lock.unlock();
 

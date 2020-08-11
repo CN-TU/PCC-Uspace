@@ -273,6 +273,18 @@ void PccSender::OnCongestionEvent(bool rtt_updated,
                                     lost_packets,
                                     avg_rtt_us,
                                     event_time);
+
+  if (lost_packets.size() > 0) {
+    if (!(lost_at_least_one_packet_already) && mode_ == PccSender::SenderMode::FIXED_RATE) {
+      UtilityInfo dummy_utility = UtilityInfo(1, 1, 1, 0.5);
+      std::vector<UtilityInfo> dummy_utility_vector;
+      dummy_utility_vector.push_back(dummy_utility);
+      set_rate(sending_rate_);
+      OnUtilityAvailable(dummy_utility_vector);
+    }
+    lost_at_least_one_packet_already = true;
+  }
+
 }
 
 #ifdef QUIC_PORT

@@ -164,11 +164,14 @@ int main(int argc, char* argv[]) {
   return 1;
 }
 
-bool loss_in_both_once = false;
+// bool loss_in_both_once = false;
 bool loss_again = false;
 
 bool received_first = false;
 bool received_second = false;
+
+UtilityInfo utility_info_first;
+UtilityInfo utility_info_second;
 
 void* wait_for_new_result(void* arg) {
 
@@ -179,76 +182,82 @@ void* wait_for_new_result(void* arg) {
   bool reversed = sc.reversed;
 
   while (true) {
-    pthread_mutex_lock(&(pcc_sender->new_result_mutex));
     while (!pcc_sender->just_got_new_result) {
+      pthread_mutex_lock(&(pcc_sender->new_result_mutex));
       pthread_cond_wait(&(pcc_sender->new_result_cond), &(pcc_sender->new_result_mutex));
-
-      pcc_sender->just_got_new_result = false;
-
-      pthread_mutex_lock(&result_waiter_mutex);
-      if (!reversed) {
-        received_first = true;
-      } else {
-        received_second = true;
+      if (loss_again) {
+        pthread_mutex_unlock(&(pcc_sender->new_result_mutex));
+        return NULL;
       }
-      if (received_first && received_second) {
-        received_first = false;
-        received_second = false;
-
-        PccSender* first_sender;
-        PccSender* second_sender;
-
-        int first_connection_id = -1;
-        int second_connection_id = -1;
-
-        if (!reversed) {
-          first_sender = pcc_sender;
-          second_sender = pcc_sender2;
-          first_connection_id = sc.connection_id_sender1;
-          second_connection_id = sc.connection_id_sender2;
-        } else {
-          first_sender = pcc_sender2;
-          second_sender = pcc_sender;
-          first_connection_id = sc.connection_id_sender2;
-          second_connection_id = sc.connection_id_sender1;
-        }
-        bool loss_in_both = (first_sender->latest_utility_info_.actual_sending_rate > first_sender->latest_utility_info_.actual_good_sending_rate) && (second_sender->latest_utility_info_.actual_sending_rate > second_sender->latest_utility_info_.actual_good_sending_rate);
-
-        // if (!loss_in_both) {
-        //   loss_in_both_once = false;
-        //   loss_again = false;
-        // }
-
-        if (loss_in_both_once && loss_in_both && !loss_again) {
-          loss_again = loss_in_both;
-          // UDT::close(second_connection_id);
-          // double current_rate = first_sender->sending_rate_;
-          // first_sender->set_rate(current_rate/2/2*1.5);
-          // first_sender->mode_ = PccSender::SenderMode::VEGAS_LIKE;
-          // break;
-        }
-        if (!loss_in_both_once && loss_in_both) {
-          loss_in_both_once = loss_in_both;
-        }
-
-        double throughput_rate_first = first_sender->latest_utility_info_.actual_good_sending_rate/first_sender->latest_utility_info_.actual_sending_rate;
-        double throughput_rate_second = second_sender->latest_utility_info_.actual_good_sending_rate/second_sender->latest_utility_info_.actual_sending_rate;
-
-        cout << "loss_once " << loss_in_both_once << " loss_again " << loss_again << " throughput_rate_first " << throughput_rate_first << " throughput_rate_second " << throughput_rate_second << " loss_ratio " << throughput_rate_first/throughput_rate_second << endl;
-
-        double new_first_rate = first_sender->sending_rate_;
-        double new_second_rate = second_sender->sending_rate_;
-        if (!loss_again) {
-          new_first_rate *= 2;
-          new_second_rate *= 2;
-        }
-
-        first_sender->set_rate(new_first_rate);
-        second_sender->set_rate(new_second_rate);
-      }
-      pthread_mutex_unlock(&result_waiter_mutex);
-
     }
+    pcc_sender->just_got_new_result = false;
+
+    pthread_mutex_lock(&result_waiter_mutex);
+
+    if (!reversed) {
+      received_first = true;
+      utility_info_first = pcc_sender->latest_utility_info_;
+    } else {
+      received_second = true;
+      utility_info_second = pcc_sender->latest_utility_info_;
+    }
+
+    if (received_first && received_second) {
+      received_first = false;
+      received_second = false;
+
+      PccSender* first_sender;
+      PccSender* second_sender;
+
+      int first_connection_id = -1;
+      int second_connection_id = -1;
+
+      if (!reversed) {
+        first_sender = pcc_sender;
+        second_sender = pcc_sender2;
+        first_connection_id = sc.connection_id_sender1;
+        second_connection_id = sc.connection_id_sender2;
+      } else {
+        first_sender = pcc_sender2;
+        second_sender = pcc_sender;
+        first_connection_id = sc.connection_id_sender2;
+        second_connection_id = sc.connection_id_sender1;
+      }
+      // bool loss_in_both = (utility_info_first.actual_sending_rate > utility_info_first.actual_good_sending_rate) && (utility_info_second.actual_sending_rate > utility_info_second.actual_good_sending_rate);
+      bool loss_in_both = (first_sender->latest_utility_info_.actual_sending_rate > first_sender->latest_utility_info_.actual_good_sending_rate) && (second_sender->latest_utility_info_.actual_sending_rate > second_sender->latest_utility_info_.actual_good_sending_rate);
+
+      // if (!loss_in_both) {
+      //   loss_in_both_once = false;
+      //   loss_again = false;
+      // }
+
+      if (first_sender->latest_utility_info_.utility != 1 && second_sender->latest_utility_info_.utility != 1 && first_sender->lost_at_least_one_packet_already && second_sender->lost_at_least_one_packet_already && loss_in_both && !loss_again) {
+        loss_again = loss_in_both;
+        // UDT::close(second_connection_id);
+        // double current_rate = first_sender->sending_rate_;
+        // first_sender->set_rate(current_rate/2/2*1.5);
+        // first_sender->mode_ = PccSender::SenderMode::VEGAS_LIKE;
+        // break;
+      }
+
+      // double throughput_rate_first = utility_info_first.actual_good_sending_rate/utility_info_first.actual_sending_rate;
+      // double throughput_rate_second = utility_info_second.actual_good_sending_rate/utility_info_second.actual_sending_rate;
+      double throughput_rate_first = first_sender->latest_utility_info_.actual_good_sending_rate/first_sender->latest_utility_info_.actual_sending_rate;
+      double throughput_rate_second = second_sender->latest_utility_info_.actual_good_sending_rate/second_sender->latest_utility_info_.actual_sending_rate;
+
+      cout << "reversed " << reversed << " loss_again " << loss_again << " throughput_rate_first " << throughput_rate_first << " throughput_rate_second " << throughput_rate_second << " loss_ratio " << throughput_rate_first/throughput_rate_second << endl;
+
+      double new_first_rate = first_sender->sending_rate_;
+      double new_second_rate = second_sender->sending_rate_;
+      if (!loss_in_both) {
+        new_first_rate *= 2;
+        new_second_rate *= 2;
+      }
+
+      first_sender->set_rate(new_first_rate);
+      second_sender->set_rate(new_second_rate);
+    }
+    pthread_mutex_unlock(&result_waiter_mutex);
     pthread_mutex_unlock(&(pcc_sender->new_result_mutex));
   }
 }

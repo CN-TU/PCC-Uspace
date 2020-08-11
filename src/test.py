@@ -34,7 +34,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--bytes_to_capture', type=int, default=100)
 parser.add_argument('--delay_to_add', type=int, default=100)
-parser.add_argument('--rate', type=float, default=10)
+parser.add_argument('--rate', type=float, default=8)
 parser.add_argument('--time', type=float, default=10)
 parser.add_argument('--qdisc', type=str, default="fq")
 parser.add_argument('--cport', type=int, default=9000)
