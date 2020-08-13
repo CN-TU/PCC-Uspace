@@ -488,9 +488,23 @@ bool PccMonitorIntervalQueue::CalculateUtility(MonitorInterval* interval) {
     loss_contribution =
         interval->n_packets * (1 * (pow((1 + loss_rate), 1) - 1));
   }
-  float current_utility = sending_factor -
-      (loss_contribution + rtt_contribution) *
-      (sending_rate_bps / kMegabit) / static_cast<float>(interval->n_packets);
+  float current_utility;
+  if (cc_mode == UtilityMode::PCC) {
+    current_utility = sending_factor -
+        (loss_contribution + rtt_contribution) *
+        (sending_rate_bps / kMegabit) / static_cast<float>(interval->n_packets);
+  } else if (cc_mode == UtilityMode::PCC_CLASSIC) {
+    // current_utility = ((bytes_sent-bytes_lost)/mi_time_seconds*(1-1/(1+exp(-100*(bytes_lost/bytes_sent-0.05))))-1*bytes_lost/mi_time_seconds);
+    current_utility = sending_factor -
+            loss_contribution *
+            (sending_rate_bps / kMegabit) / static_cast<float>(interval->n_packets);
+  } else {
+    std::vector<QuicTime> all_rtts;
+    for (int i = 0; i < interval->packet_rtt_samples.size(); i++) {
+      all_rtts.push_back(interval->packet_rtt_samples[i].sample_rtt);
+    }
+    current_utility = std::accumulate(std::begin(all_rtts), std::end(all_rtts), 0.0) / all_rtts.size();
+  }
 
 #if !defined(QUIC_PORT) && defined(DEBUG_UTILITY_CALC)
   std::cerr << "Calculate utility:" << std::endl;

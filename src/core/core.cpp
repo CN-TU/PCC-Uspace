@@ -127,7 +127,7 @@ CUDT::CUDT() {
   m_iSndBufSize =100000;
   //Rcv buffer MUST NOT be bigger than Flight Flag size
   m_iRcvBufSize = 1000000;
-  m_Linger.l_onoff = 1;
+  m_Linger.l_onoff = 0;
   m_Linger.l_linger = 180;
   m_iUDPSndBufSize = 100000;
   m_iUDPRcvBufSize = m_iRcvBufSize * m_iMSS;

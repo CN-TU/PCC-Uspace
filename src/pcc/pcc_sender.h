@@ -130,6 +130,8 @@ class QUIC_EXPORT_PRIVATE PccSender
 #endif
 
   void set_rate(const double rate);
+  void set_pcc_classic();
+  void set_vegas();
 
 #ifdef QUIC_PORT
   // Start implementation of SendAlgorithmInterface.

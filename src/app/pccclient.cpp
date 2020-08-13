@@ -41,6 +41,9 @@ struct socket_couple {
 #define MIN_RATE 100000.0
 pthread_mutex_t result_waiter_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+pthread_t sending_thread;
+pthread_t sending_thread2;
+
 int main(int argc, char* argv[]) {
   if (argc < 4 || 0 == atoi(argv[3])) {
     cout << "usage: " << argv[0] << " <send|recv> server_ip server_port";
@@ -125,8 +128,6 @@ int main(int argc, char* argv[]) {
     pthread_create(new pthread_t, NULL, wait_for_new_result, &sc1);
     pthread_create(new pthread_t, NULL, wait_for_new_result, &sc2);
 
-    pthread_t sending_thread;
-    pthread_t sending_thread2;
     pthread_create(&sending_thread, NULL, send_things, &client);
     pthread_create(&sending_thread2, NULL, send_things, &client2);
     void* val;
@@ -209,18 +210,18 @@ void* wait_for_new_result(void* arg) {
       PccSender* first_sender;
       PccSender* second_sender;
 
-      int first_connection_id = -1;
+      // int first_connection_id = -1;
       int second_connection_id = -1;
 
       if (!reversed) {
         first_sender = pcc_sender;
         second_sender = pcc_sender2;
-        first_connection_id = sc.connection_id_sender1;
+        // first_connection_id = sc.connection_id_sender1;
         second_connection_id = sc.connection_id_sender2;
       } else {
         first_sender = pcc_sender2;
         second_sender = pcc_sender;
-        first_connection_id = sc.connection_id_sender2;
+        // first_connection_id = sc.connection_id_sender2;
         second_connection_id = sc.connection_id_sender1;
       }
       // bool loss_in_both = (utility_info_first.actual_sending_rate > utility_info_first.actual_good_sending_rate) && (utility_info_second.actual_sending_rate > utility_info_second.actual_good_sending_rate);
@@ -233,11 +234,6 @@ void* wait_for_new_result(void* arg) {
 
       if (first_sender->latest_utility_info_.utility != 1 && second_sender->latest_utility_info_.utility != 1 && first_sender->lost_at_least_one_packet_already && second_sender->lost_at_least_one_packet_already && loss_in_both && !loss_again) {
         loss_again = loss_in_both;
-        // UDT::close(second_connection_id);
-        // double current_rate = first_sender->sending_rate_;
-        // first_sender->set_rate(current_rate/2/2*1.5);
-        // first_sender->mode_ = PccSender::SenderMode::VEGAS_LIKE;
-        // break;
       }
 
       // double throughput_rate_first = utility_info_first.actual_good_sending_rate/utility_info_first.actual_sending_rate;
@@ -256,6 +252,15 @@ void* wait_for_new_result(void* arg) {
 
       first_sender->set_rate(new_first_rate);
       second_sender->set_rate(new_second_rate);
+
+      if (loss_again) {
+        cout << "here" << endl;
+        first_sender->set_rate((first_sender->sending_rate_)*3/2);
+
+        // pthread_cancel(sending_thread2);
+        UDT::close(second_connection_id);
+        // first_sender->mode_ = PccSender::SenderMode::VEGAS_LIKE;
+      }
     }
     pthread_mutex_unlock(&result_waiter_mutex);
     pthread_mutex_unlock(&(pcc_sender->new_result_mutex));

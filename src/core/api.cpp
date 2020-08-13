@@ -784,6 +784,7 @@ void CUDTUnited::connect_complete(const UDTSOCKET u) {
 
 int CUDTUnited::close(const UDTSOCKET u) {
   CUDTSocket* s = locate(u);
+  cout << "s " << s << endl;
   if (NULL == s) {
     throw CUDTException(5, 4, 0);
   }

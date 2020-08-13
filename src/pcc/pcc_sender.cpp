@@ -214,6 +214,16 @@ void PccSender::OnPacketSent(QuicTime sent_time,
   interval_queue_.OnPacketSent(sent_time, packet_number, bytes);
 }
 
+  void PccSender::set_pcc_classic() {
+    mode_ = PROBING;
+    interval_queue_.cc_mode = UtilityMode::PCC_CLASSIC;
+  }
+  void PccSender::set_vegas() {
+    mode_ = VEGAS_LIKE;
+    interval_queue_.cc_mode = UtilityMode::VEGAS;
+  }
+
+
 void PccSender::set_rate(const double rate) {
   sending_rate_ = rate;
   mode_ = FIXED_RATE;

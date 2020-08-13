@@ -172,7 +172,6 @@ enum UtilityMode {
   VEGAS
 };
 
-
 // PccMonitorIntervalQueue contains a queue of MonitorIntervals.
 // New MonitorIntervals are added to the tail of the queue.
 // Existing MonitorIntervals are removed from the queue when all
