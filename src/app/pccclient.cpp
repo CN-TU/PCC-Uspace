@@ -227,6 +227,8 @@ void* wait_for_new_result(void* arg) {
       // bool loss_in_both = (utility_info_first.actual_sending_rate > utility_info_first.actual_good_sending_rate) && (utility_info_second.actual_sending_rate > utility_info_second.actual_good_sending_rate);
       bool loss_in_both = (first_sender->latest_utility_info_.actual_sending_rate > first_sender->latest_utility_info_.actual_good_sending_rate) && (second_sender->latest_utility_info_.actual_sending_rate > second_sender->latest_utility_info_.actual_good_sending_rate);
 
+      // bool loss_in_one = (first_sender->latest_utility_info_.actual_sending_rate > first_sender->latest_utility_info_.actual_good_sending_rate) || (second_sender->latest_utility_info_.actual_sending_rate > second_sender->latest_utility_info_.actual_good_sending_rate);
+
       // if (!loss_in_both) {
       //   loss_in_both_once = false;
       //   loss_again = false;
@@ -241,7 +243,8 @@ void* wait_for_new_result(void* arg) {
       double throughput_rate_first = first_sender->latest_utility_info_.actual_good_sending_rate/first_sender->latest_utility_info_.actual_sending_rate;
       double throughput_rate_second = second_sender->latest_utility_info_.actual_good_sending_rate/second_sender->latest_utility_info_.actual_sending_rate;
 
-      cout << "reversed " << reversed << " loss_again " << loss_again << " throughput_rate_first " << throughput_rate_first << " throughput_rate_second " << throughput_rate_second << " loss_ratio " << throughput_rate_first/throughput_rate_second << endl;
+      double loss_ratio = throughput_rate_first/throughput_rate_second;
+      cout << "reversed " << reversed << " loss_again " << loss_again << " throughput_rate_first " << throughput_rate_first << " throughput_rate_second " << throughput_rate_second << " loss_ratio " << loss_ratio << endl;
 
       double new_first_rate = first_sender->sending_rate_;
       double new_second_rate = second_sender->sending_rate_;
@@ -254,12 +257,17 @@ void* wait_for_new_result(void* arg) {
       second_sender->set_rate(new_second_rate);
 
       if (loss_again) {
-        cout << "here" << endl;
         first_sender->set_rate((first_sender->sending_rate_)*3/2);
 
         // pthread_cancel(sending_thread2);
         UDT::close(second_connection_id);
-        // first_sender->mode_ = PccSender::SenderMode::VEGAS_LIKE;
+        if (loss_ratio > 1.5) {
+          cout << "Starting vegas" << endl;
+          first_sender->set_vegas();
+        } else {
+          cout << "Staring PCC Classic" << endl;
+          first_sender->set_pcc_classic();
+        }
       }
     }
     pthread_mutex_unlock(&result_waiter_mutex);

@@ -533,12 +533,15 @@ void PccSender::OnUtilityAvailable(
 #endif
   switch (mode_) {
     case VEGAS_LIKE:
-      if (utility_info[0].utility > min_rtt + 5) {
+      std::cout << "utility_info[0].utility " << utility_info[0].utility << " min_rtt " << min_rtt << std::endl;
+      if (utility_info[0].utility > min_rtt + 5000) {
         // decrease
-        sending_rate_ = sending_rate_ * (1.0 / (1 + kProbingStepSize));
+        std::cout << "decrease" << std::endl;
+        sending_rate_ = sending_rate_ * (1.0 / (1 + 0.05));
       } else {
+        std::cout << "increase" << std::endl;
         // increase
-        sending_rate_ = sending_rate_ * (1.0 / (1 - kProbingStepSize));
+        sending_rate_ = sending_rate_ * (1.0 / (1 - 0.025));
       }
       break;
     case STARTING:
@@ -573,6 +576,7 @@ void PccSender::OnUtilityAvailable(
       pthread_mutex_unlock(&new_result_mutex);
       break;
     case PROBING:
+      std::cout << "probing" << std::endl;
       if (CanMakeDecision(utility_info)) {
 #ifdef QUIC_PORT
         DCHECK_EQ(2 * kNumIntervalGroupsInProbing, utility_info.size());
@@ -667,7 +671,7 @@ bool PccSender::CreateUsefulInterval() const {
   // intervals in the queue; while in PROBING mode, there should be at most
   // 2 * kNumIntervalGroupsInProbing.
   size_t max_num_useful =
-      (mode_ == FIXED_RATE) ? 1 : ((mode_ == PROBING) ? 2 * kNumIntervalGroupsInProbing : 1);
+      (mode_ == PROBING) ? 2 * kNumIntervalGroupsInProbing : 1;
   return interval_queue_.num_useful_intervals() < max_num_useful;
 }
 
