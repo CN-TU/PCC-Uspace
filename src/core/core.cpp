@@ -1571,9 +1571,16 @@ void CUDT::add_to_loss_record(int32_t loss1, int32_t loss2, bool lock) {
   LostPacketVector lost_packets;
   if (lock)
     pcc_sender_lock.lock();
+  // cout << "loss1 " << loss1 << " loss2 " << loss2 << endl;
   for (int loss = loss1; loss <= loss2; ++loss) {
     int32_t msg_no = packet_tracker_->GetPacketLastMsgNo(loss);
     PacketId pkt_id = packet_tracker_->GetPacketId(loss, msg_no);
+    // cout << "loss " << loss << " msg_no " << msg_no << " loss1 " << loss1 << " loss2 " << loss2 << " pkt_id " << pkt_id << endl;
+    if (pkt_id == 0) {
+      // cout << "pkt_id is zero! loss " << loss << " msg_no " << msg_no << " loss1 " << loss1 << " loss2 " << loss2 << " pkt_id " << pkt_id << endl;
+      continue;
+    }
+    assert(pkt_id != 0);
     CongestionEvent loss_event;
     loss_event.packet_number = pkt_id;
     loss_event.bytes_acked = 0;
@@ -1589,12 +1596,12 @@ void CUDT::add_to_loss_record(int32_t loss1, int32_t loss2, bool lock) {
   if (lock)
     pcc_sender_lock.unlock();
 
-#ifdef EXPERIMENTAL_FEATURE_CONTINOUS_SEND
-  pthread_mutex_lock(&m_LossrecordLock);
-  loss_record1.push_back(loss1);
-  loss_record2.push_back(loss2);
-  pthread_mutex_unlock(&m_LossrecordLock);
-#endif
+// #ifdef EXPERIMENTAL_FEATURE_CONTINOUS_SEND
+//   pthread_mutex_lock(&m_LossrecordLock);
+//   loss_record1.push_back(loss1);
+//   loss_record2.push_back(loss2);
+//   pthread_mutex_unlock(&m_LossrecordLock);
+// #endif
 }
 
 void CUDT::ProcessAck(CPacket& ctrlpkt) {
@@ -1616,24 +1623,25 @@ void CUDT::ProcessAck(CPacket& ctrlpkt) {
     return;
   }
 
-  packet_tracker_->DeletePacketRecord(seq_no);
   if (old_state == PACKET_STATE_LOST) {
-    pcc_sender_lock.unlock();
-    return;
-  }
-
-  if (pkt_id == 0) {
+    packet_tracker_->DeletePacketRecord(seq_no);
     pcc_sender_lock.unlock();
     return;
   }
 
   // cout << "seq_no " << seq_no << "m_iSndLastAck " << m_iSndLastAck << endl;
-  int32_t lost_packet_number = seq_no-m_iSndLastAck-1;
+  // assert(!(seq_no<m_iSndLastAck));
+  int32_t lost_packet_number = max(seq_no-m_iSndLastAck-1, 0);
   if (lost_packet_number > 0) {
     // cout << "lost_packet_number " << lost_packet_number << " seq_no " << seq_no << " m_iSndLastAck " << m_iSndLastAck << endl;
+    if (packet_tracker_->GetPacketId(m_iSndLastAck+1, packet_tracker_->GetPacketLastMsgNo(m_iSndLastAck+1)) == 0) {
+      cout << "pkt_id is zero! msg_no " << msg_no << " seq_no " << seq_no << " m_iSndLastAck " << m_iSndLastAck << " loss1 " << m_iSndLastAck+1 << " loss2 " << m_iSndLastAck+lost_packet_number << " pkt_id " << pkt_id << endl;
+    }
     add_to_loss_record(m_iSndLastAck+1, m_iSndLastAck+lost_packet_number, false);
   }
-  m_iSndLastAck = seq_no;
+  m_iSndLastAck = max(seq_no, (int32_t) m_iSndLastAck);
+
+  packet_tracker_->DeletePacketRecord(seq_no);
 
   AckedPacketVector acked_packets;
   LostPacketVector lost_packets;
@@ -1952,6 +1960,7 @@ int CUDT::listen(sockaddr* addr, CPacket& packet) {
 }
 
 void CUDT::checkTimers() {
+  // std::cout << "checkTimers" << std::endl;
   bool above_loss_threshold = true;
   uint64_t loss_thresh_us = 2.0 * m_iRTT + 4 * m_iRTTVar;
   struct timespec cur_time;
@@ -1967,6 +1976,7 @@ void CUDT::checkTimers() {
           (cur_time.tv_nsec - sent_time.tv_nsec) / 1000 +
           (cur_time.tv_sec - sent_time.tv_sec) * 1000000;
       if (time_since_sent > loss_thresh_us) {
+        // std::cout << "Timers expired" << std::endl;
         add_to_loss_record(seq_no, seq_no);
       } else {
         above_loss_threshold = false;

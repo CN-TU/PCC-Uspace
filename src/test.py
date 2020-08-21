@@ -33,7 +33,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--bytes_to_capture', type=int, default=100)
-parser.add_argument('--delay_to_add', type=int, default=100)
+parser.add_argument('--delay', type=int, default=100)
 parser.add_argument('--rate', type=float, default=8)
 parser.add_argument('--time', type=float, default=10)
 parser.add_argument('--qdisc', type=str, default="fq")
@@ -115,7 +115,7 @@ def run(vnet):
 			execute_popen_and_show_result(f"ethtool -K {interface} gso off")
 			execute_popen_and_show_result(f"ethtool -K {interface} tso off")
 
-			run_commands([f"tc qdisc add dev {interface} root handle 1: netem{f' delay {int(opt.delay_to_add)}ms' if interface=='host00' else ''}", f"tc qdisc add dev {interface} parent 1: handle 2: htb default 21", f"tc class add dev {interface} parent 2: classid 2:21 htb rate {opt.rate}mbit", f"tc qdisc add dev {interface} parent 2:21 handle 3: {opt.qdisc if interface=='host10' else 'fq'}{f' flow_limit {int(math.ceil(opt.buffer_size))}' if (interface=='host10' and opt.qdisc=='fq') else ''}{f' limit {int(math.ceil(opt.buffer_size))}' if (interface=='host10' and opt.qdisc=='pfifo') else ''}"])
+			run_commands([f"tc qdisc add dev {interface} root handle 1: netem{f' delay {int(opt.delay)}ms' if interface=='host00' else ''}", f"tc qdisc add dev {interface} parent 1: handle 2: htb default 21", f"tc class add dev {interface} parent 2: classid 2:21 htb rate {opt.rate}mbit", f"tc qdisc add dev {interface} parent 2:21 handle 3: {opt.qdisc if interface=='host10' else 'fq'}{f' flow_limit {int(math.ceil(opt.buffer_size))}' if (interface=='host10' and opt.qdisc=='fq') else ''}{f' limit {int(math.ceil(opt.buffer_size))}' if (interface=='host10' and opt.qdisc=='pfifo') else ''}"])
 		vnet.update_hosts()
 
 		for i in range(len(hosts)):
@@ -128,17 +128,17 @@ def run(vnet):
 			ping_output = [float(item.split()[-2][5:]) for item in ping_output if "time=" in item]
 			mean_rtt = statistics.mean(ping_output)
 			print("mean rtt", mean_rtt)
-			assert mean_rtt >= opt.delay_to_add
+			assert mean_rtt >= opt.delay
 
 		server_popen = hosts[1].Popen(f"./app/pccserver recv {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 		os.makedirs("pcaps", exist_ok=True)
-		tcpdump_sender_popen = hosts[0].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/sender_{opt.qdisc}_{opt.delay_to_add}_{opt.rate}_{opt.time}_{start_time}.pcap dst port {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		tcpdump_receiver_popen = hosts[1].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/receiver_{opt.qdisc}_{opt.delay_to_add}_{opt.rate}_{opt.time}_{start_time}.pcap dst port {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		tcpdump_sender_popen = hosts[0].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/sender_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap dst port {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		tcpdump_receiver_popen = hosts[1].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/receiver_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap dst port {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 		# tcpdump_switch_popens = []
 		# for interface_name in switch.interfaces.keys():
-		# 	tcpdump_switch_popens.append(subprocess.Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i {interface_name} -w pcaps/switch_{opt.qdisc}_{opt.delay_to_add}_{opt.rate}_{opt.time}_{start_time}_{interface_name}.pcap".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+		# 	tcpdump_switch_popens.append(subprocess.Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i {interface_name} -w pcaps/switch_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}_{interface_name}.pcap".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
 
 		client_popen = hosts[0].Popen(f"./app/pccclient send host1 {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		print("client pid", client_popen.pid)

@@ -234,8 +234,10 @@ void* wait_for_new_result(void* arg) {
       //   loss_again = false;
       // }
 
+      double maximum_goodput;
       if (first_sender->latest_utility_info_.utility != 1 && second_sender->latest_utility_info_.utility != 1 && first_sender->lost_at_least_one_packet_already && second_sender->lost_at_least_one_packet_already && loss_in_both && !loss_again) {
         loss_again = loss_in_both;
+        maximum_goodput = first_sender->latest_utility_info_.actual_good_sending_rate+second_sender->latest_utility_info_.actual_good_sending_rate;
       }
 
       // double throughput_rate_first = utility_info_first.actual_good_sending_rate/utility_info_first.actual_sending_rate;
@@ -248,7 +250,8 @@ void* wait_for_new_result(void* arg) {
 
       double new_first_rate = first_sender->sending_rate_;
       double new_second_rate = second_sender->sending_rate_;
-      if (!loss_in_both) {
+      // if (!loss_in_both) {
+      if (!(first_sender->lost_at_least_one_packet_already && second_sender->lost_at_least_one_packet_already)) {
         new_first_rate *= 2;
         new_second_rate *= 2;
       }
@@ -257,15 +260,16 @@ void* wait_for_new_result(void* arg) {
       second_sender->set_rate(new_second_rate);
 
       if (loss_again) {
-        first_sender->set_rate((first_sender->sending_rate_)*3/2);
+        first_sender->set_rate(maximum_goodput);
 
         // pthread_cancel(sending_thread2);
         UDT::close(second_connection_id);
+        // second_sender->set_rate(0);
         if (loss_ratio > 1.5) {
           cout << "Starting vegas" << endl;
           first_sender->set_vegas();
         } else {
-          cout << "Staring PCC Classic" << endl;
+          cout << "Starting PCC Classic" << endl;
           first_sender->set_pcc_classic();
         }
       }

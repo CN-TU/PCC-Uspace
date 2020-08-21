@@ -10,6 +10,7 @@
 #include "pcc_monitor_interval_queue.h"
 #include "pcc_sender.h"
 #include <iostream>
+#include <cassert>
 #endif
 
 #ifdef QUIC_PORT
@@ -223,6 +224,8 @@ void PccMonitorIntervalQueue::OnPacketSent(QuicTime sent_time,
 #endif
 }
 
+size_t counter = 0;
+
 void PccMonitorIntervalQueue::OnCongestionEvent(
     const AckedPacketVector& acked_packets,
     const LostPacketVector& lost_packets,
@@ -235,7 +238,22 @@ void PccMonitorIntervalQueue::OnCongestionEvent(
   }
 
   bool has_invalid_utility = false;
+  // std::cout << "num_useful_intervals_ " << num_useful_intervals_ << "monitor_intervals_ " << monitor_intervals_.size() << std::endl;
+
+  counter++;
+  bool should_report = counter % 10000 == 0;
+  if (should_report) {
+    std::cout << "reporting " << " acked_packets.size() " << acked_packets.size() << " lost_packets.size() " << lost_packets.size() << " lost_packets[0].bytes_acked " << lost_packets[0].bytes_acked << " lost_packets[0].bytes_lost " << lost_packets[0].bytes_lost << " lost_packets[0].packet_number " << lost_packets[0].packet_number << " lost_packets[0].time " << lost_packets[0].time << std::endl;
+  }
   for (MonitorInterval& interval : monitor_intervals_) {
+
+    assert(interval.end_time > 0);
+    if (should_report) {
+      bool ret = (event_time >= interval.end_time &&
+              interval.bytes_acked + interval.bytes_lost >= interval.bytes_sent);
+      std::cout << "IsUtilityAvailable " << ret << " event_time " << event_time/1000000 << " interval.end_time " << interval.end_time << " interval.bytes_acked " << interval.bytes_acked << " interval.bytes_lost " << interval.bytes_lost << " interval.bytes_sent " << interval.bytes_sent << " interval.is_useful " << interval.is_useful << std::endl;
+    }
+
     if (!interval.is_useful) {
       // Skips useless monitor intervals.
       continue;
@@ -248,6 +266,7 @@ void PccMonitorIntervalQueue::OnCongestionEvent(
     }
 
     for (const LostPacket& lost_packet : lost_packets) {
+      assert (lost_packet.packet_number != 0);
       if (IntervalContainsPacket(interval, lost_packet.packet_number)) {
         interval.bytes_lost += lost_packet.bytes_lost;
 #if (! defined(QUIC_PORT)) && defined(DEBUG_MONITOR_INTERVAL_QUEUE_LOSS)
@@ -263,6 +282,7 @@ void PccMonitorIntervalQueue::OnCongestionEvent(
     }
 
     for (const AckedPacket& acked_packet : acked_packets) {
+      assert (acked_packet.packet_number != 0);
       if (IntervalContainsPacket(interval, acked_packet.packet_number)) {
         interval.bytes_acked += acked_packet.bytes_acked;
         interval.packet_rtt_samples.push_back(
@@ -372,8 +392,16 @@ bool PccMonitorIntervalQueue::IsUtilityAvailable(
     const MonitorInterval& interval,
     QuicTime event_time) const {
 
-    return (event_time >= interval.end_time &&
-            interval.bytes_acked + interval.bytes_lost == interval.bytes_sent);
+    bool ret = (event_time >= interval.end_time &&
+            interval.bytes_acked + interval.bytes_lost >= interval.bytes_sent);
+    // if (!(interval.bytes_acked + interval.bytes_lost <= interval.bytes_sent)) {
+    //   std::cout << "IsUtilityAvailable " << ret << " event_time " << event_time << " interval.end_time " << interval.end_time << " interval.bytes_acked " << interval.bytes_acked << " interval.bytes_lost " << interval.bytes_lost << " interval.bytes_sent " << interval.bytes_sent << std::endl;
+    // }
+    // assert(interval.bytes_acked + interval.bytes_lost <= interval.bytes_sent);
+    // if (interval.bytes_lost > 0) {
+    //   std::cout << "IsUtilityAvailable " << ret << " event_time " << event_time << " interval.end_time " << interval.end_time << " interval.bytes_acked " << interval.bytes_acked << " interval.bytes_lost " << interval.bytes_lost << " interval.bytes_sent " << interval.bytes_sent << std::endl;
+    // }
+    return ret;
 }
 
 bool PccMonitorIntervalQueue::IntervalContainsPacket(
@@ -430,6 +458,7 @@ bool PccMonitorIntervalQueue::CalculateUtility(MonitorInterval* interval) {
 #endif
   if (interval->last_packet_sent_time == interval->first_packet_sent_time) {
     // Cannot get valid utility if interval only contains one packet.
+    // std::cout << "CalculateUtility: failed: only one packet" << std::endl;
     return false;
   }
   const int64_t kMinTransmissionTime = 1l;
@@ -528,6 +557,7 @@ bool PccMonitorIntervalQueue::CalculateUtility(MonitorInterval* interval) {
 #endif
 
   interval->utility = current_utility;
+  // std::cout << "CalculateUtility: worked!" << std::endl;
   return true;
 }
 

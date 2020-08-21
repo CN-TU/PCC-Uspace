@@ -193,6 +193,10 @@ void PccSender::OnPacketSent(QuicTime sent_time,
           FLAGS_max_rtt_fluctuation_tolerance_ratio_in_decision_made;
     }
 
+    if (!(sent_time + monitor_duration_ > 0)) {
+      std::cout << "sent_time " << sent_time << " monitor_duration " << monitor_duration_ << std::endl;
+    }
+    assert(sent_time + monitor_duration_ > 0);
     bool is_useful = CreateUsefulInterval();
     interval_queue_.EnqueueNewMonitorInterval(
         sending_rate_, is_useful,
@@ -284,14 +288,12 @@ void PccSender::OnCongestionEvent(bool rtt_updated,
                                     avg_rtt_us,
                                     event_time);
 
-  if (lost_packets.size() > 0) {
-    if (!(lost_at_least_one_packet_already) && mode_ == PccSender::SenderMode::FIXED_RATE) {
-      UtilityInfo dummy_utility = UtilityInfo(1, 1, 1, 0.5);
-      std::vector<UtilityInfo> dummy_utility_vector;
-      dummy_utility_vector.push_back(dummy_utility);
-      set_rate(sending_rate_);
-      OnUtilityAvailable(dummy_utility_vector);
-    }
+  if (lost_packets.size() > 0 && (!(lost_at_least_one_packet_already) && mode_ == PccSender::SenderMode::FIXED_RATE)) {
+    UtilityInfo dummy_utility = UtilityInfo(1, 1, 1, 0.5);
+    std::vector<UtilityInfo> dummy_utility_vector;
+    dummy_utility_vector.push_back(dummy_utility);
+    set_rate(sending_rate_);
+    OnUtilityAvailable(dummy_utility_vector);
     lost_at_least_one_packet_already = true;
   }
 
