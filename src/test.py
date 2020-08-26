@@ -9,7 +9,10 @@ import io
 import time
 import math
 import signal
+import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+
+print("sys.version", sys.version)
 
 start_time = int(time.time() * 1000)
 
@@ -39,6 +42,8 @@ parser.add_argument('--time', type=float, default=10)
 parser.add_argument('--qdisc', type=str, default="fq")
 parser.add_argument('--cport', type=int, default=9000)
 parser.add_argument('--buffer_size', type=int, default=10)
+parser.add_argument('--how_many_values_per_parameter', type=int, default=1)
+parser.add_argument('--run_scenario', type=str, default="")
 
 opt = parser.parse_args()
 print(opt)
@@ -151,6 +156,8 @@ def run(vnet):
 		if err:
 			print("client err", err.decode("utf-8"))
 
+		client_out = out
+
 		server_popen.terminate()
 		out, err = server_popen.stdout.read(), server_popen.stderr.read()
 		if out:
@@ -174,5 +181,46 @@ def run(vnet):
 
 		subprocess.check_output("chmod -R o+rw pcaps".split())
 
-with virtnet.Manager() as context:
+		return client_out.decode("utf-8")
+
+if opt.run_scenario == "":
+	with virtnet.Manager() as context:
 		run(context)
+elif opt.run_scenario == "accuracy":
+	import sklearn.metrics
+	results_dict = {}
+	for bw_index, bw in enumerate(np.linspace(5,10,opt.how_many_values_per_parameter)):
+		for delay_index, delay in enumerate(np.linspace(10,100,opt.how_many_values_per_parameter)):
+			for buffer_index, buffer in enumerate(np.linspace(10,50,opt.how_many_values_per_parameter)):
+				for fq_index, fq in enumerate([False, True]):
+					opt.rate = int(round(bw))
+					opt.delay = int(round(delay))
+					opt.buffer_size = int(round(buffer))
+					opt.qdisc = "fq" if fq else "pfifo"
+					opt.time = 5
+
+					with virtnet.Manager() as context:
+						client_output = run(context)
+					contained_vegas = "Starting Vegas" in client_output
+					contained_pcc = "Starting PCC Classic" in client_output
+
+					results_dict[(bw, delay, buffer, fq)] = (contained_vegas, contained_pcc)
+
+	invalid = 0
+	predictions = []
+	for (bw, delay, buffer, fq), (is_vegas, is_pcc) in results_dict.items():
+		is_invalid = (not is_vegas and not is_pcc)
+		invalid += is_invalid
+		if not is_invalid:
+			predictions.append((fq, is_vegas))
+
+	print("invalid", invalid, "total", len(results_dict), "results", results_dict)
+	confusion_matrix_input = list(zip(*predictions))
+	print("confusion_matrix_input", confusion_matrix_input)
+	confusion_matrix = sklearn.metrics.confusion_matrix(*confusion_matrix_input)
+	print("confusion_matrix", confusion_matrix)
+
+
+
+
+

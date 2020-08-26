@@ -266,7 +266,7 @@ void* wait_for_new_result(void* arg) {
         UDT::close(second_connection_id);
         // second_sender->set_rate(0);
         if (loss_ratio > 1.5) {
-          cout << "Starting vegas" << endl;
+          cout << "Starting Vegas" << endl;
           first_sender->set_vegas();
         } else {
           cout << "Starting PCC Classic" << endl;

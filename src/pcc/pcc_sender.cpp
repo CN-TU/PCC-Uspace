@@ -535,13 +535,13 @@ void PccSender::OnUtilityAvailable(
 #endif
   switch (mode_) {
     case VEGAS_LIKE:
-      std::cout << "utility_info[0].utility " << utility_info[0].utility << " min_rtt " << min_rtt << std::endl;
+      // std::cout << "utility_info[0].utility " << utility_info[0].utility << " min_rtt " << min_rtt << std::endl;
       if (utility_info[0].utility > min_rtt + 5000) {
         // decrease
-        std::cout << "decrease" << std::endl;
+        // std::cout << "decrease" << std::endl;
         sending_rate_ = sending_rate_ * (1.0 / (1 + 0.05));
       } else {
-        std::cout << "increase" << std::endl;
+        // std::cout << "increase" << std::endl;
         // increase
         sending_rate_ = sending_rate_ * (1.0 / (1 - 0.025));
       }
@@ -578,7 +578,7 @@ void PccSender::OnUtilityAvailable(
       pthread_mutex_unlock(&new_result_mutex);
       break;
     case PROBING:
-      std::cout << "probing" << std::endl;
+      // std::cout << "probing" << std::endl;
       if (CanMakeDecision(utility_info)) {
 #ifdef QUIC_PORT
         DCHECK_EQ(2 * kNumIntervalGroupsInProbing, utility_info.size());
