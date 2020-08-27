@@ -265,7 +265,7 @@ void* wait_for_new_result(void* arg) {
         // pthread_cancel(sending_thread2);
         UDT::close(second_connection_id);
         // second_sender->set_rate(0);
-        if (loss_ratio > 1.5) {
+        if ((loss_ratio > 1.5 || getenv("START_VEGAS")) && !getenv("START_PCC_CLASSIC")) {
           cout << "Starting Vegas" << endl;
           first_sender->set_vegas();
         } else {

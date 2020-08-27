@@ -42,8 +42,10 @@ parser.add_argument('--time', type=float, default=10)
 parser.add_argument('--qdisc', type=str, default="fq")
 parser.add_argument('--cport', type=int, default=9000)
 parser.add_argument('--buffer_size', type=int, default=10)
-parser.add_argument('--how_many_values_per_parameter', type=int, default=1)
+parser.add_argument('--how_many_values_per_parameter', type=int, default=5)
 parser.add_argument('--run_scenario', type=str, default="")
+parser.add_argument('--store_pcaps', action='store_true')
+parser.add_argument('--competing_flow', action='store_true')
 
 opt = parser.parse_args()
 print(opt)
@@ -84,6 +86,8 @@ def execute_popen_and_show_result(command, host=None):
 			print("out", out.decode("utf-8"))
 		if err:
 			print("err", err.decode("utf-8"))
+
+number_of_seconds_the_competing_flow_starts_earlier = 5
 
 def run(vnet):
 		"Main functionality"
@@ -136,17 +140,24 @@ def run(vnet):
 			assert mean_rtt >= opt.delay
 
 		server_popen = hosts[1].Popen(f"./app/pccserver recv {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		if opt.competing_flow:
+			server_popen_iperf = hosts[1].Popen("iperf3 -V -4 -s".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-		os.makedirs("pcaps", exist_ok=True)
-		tcpdump_sender_popen = hosts[0].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/sender_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap dst port {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		tcpdump_receiver_popen = hosts[1].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/receiver_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap dst port {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		if opt.store_pcaps:
+			os.makedirs("pcaps", exist_ok=True)
+			tcpdump_sender_popen = hosts[0].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/sender_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap dst port {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			tcpdump_receiver_popen = hosts[1].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/receiver_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap dst port {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-		# tcpdump_switch_popens = []
-		# for interface_name in switch.interfaces.keys():
-		# 	tcpdump_switch_popens.append(subprocess.Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i {interface_name} -w pcaps/switch_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}_{interface_name}.pcap".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+		# if opt.store_pcaps:
+		# 	tcpdump_switch_popens = []
+		# 	for interface_name in switch.interfaces.keys():
+		# 		tcpdump_switch_popens.append(subprocess.Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i {interface_name} -w pcaps/switch_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}_{interface_name}.pcap".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+
+		if opt.competing_flow:
+			client_popen_iperf = hosts[0].Popen(f"iperf3 -V -4 -t {opt.time+number_of_seconds_the_competing_flow_starts_earlier} --cport {opt.cport+10} -c host1".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			time.sleep(number_of_seconds_the_competing_flow_starts_earlier)
 
 		client_popen = hosts[0].Popen(f"./app/pccclient send host1 {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		print("client pid", client_popen.pid)
 
 		time.sleep(opt.time)
 		client_popen.terminate()
@@ -155,6 +166,13 @@ def run(vnet):
 			print("client out", out.decode("utf-8"))
 		if err:
 			print("client err", err.decode("utf-8"))
+		if opt.competing_flow:
+			client_popen_iperf.terminate()
+			out, err = client_popen_iperf.stdout.read(), client_popen_iperf.stderr.read()
+			if out:
+				print("client iperf out", out.decode("utf-8"))
+			if err:
+				print("client iperf err", err.decode("utf-8"))
 
 		client_out = out
 
@@ -165,21 +183,30 @@ def run(vnet):
 		if err:
 			print("server err", err.decode("utf-8"))
 
-		tcpdump_sender_popen.terminate()
-		out, err = tcpdump_sender_popen.stdout.read(), tcpdump_sender_popen.stderr.read()
-		if out:
-			print("tcpdump out", out.decode("utf-8"))
-		if err:
-			print("tcpdump err", err.decode("utf-8"))
+		if opt.competing_flow:
+			server_popen_iperf.terminate()
+			out, err = server_popen_iperf.stdout.read(), server_popen_iperf.stderr.read()
+			if out:
+				print("server iperf out", out.decode("utf-8"))
+			if err:
+				print("server iperf err", err.decode("utf-8"))
 
-		tcpdump_receiver_popen.terminate()
-		out, err = tcpdump_receiver_popen.stdout.read(), tcpdump_receiver_popen.stderr.read()
-		if out:
-			print("tcpdump out", out.decode("utf-8"))
-		if err:
-			print("tcpdump err", err.decode("utf-8"))
+		if opt.store_pcaps:
+			tcpdump_sender_popen.terminate()
+			out, err = tcpdump_sender_popen.stdout.read(), tcpdump_sender_popen.stderr.read()
+			if out:
+				print("tcpdump out", out.decode("utf-8"))
+			if err:
+				print("tcpdump err", err.decode("utf-8"))
 
-		subprocess.check_output("chmod -R o+rw pcaps".split())
+			tcpdump_receiver_popen.terminate()
+			out, err = tcpdump_receiver_popen.stdout.read(), tcpdump_receiver_popen.stderr.read()
+			if out:
+				print("tcpdump out", out.decode("utf-8"))
+			if err:
+				print("tcpdump err", err.decode("utf-8"))
+
+			subprocess.check_output("chmod -R o+rw pcaps".split())
 
 		return client_out.decode("utf-8")
 
@@ -189,9 +216,9 @@ if opt.run_scenario == "":
 elif opt.run_scenario == "accuracy":
 	import sklearn.metrics
 	results_dict = {}
-	for bw_index, bw in enumerate(np.linspace(5,10,opt.how_many_values_per_parameter)):
+	for bw_index, bw in enumerate(np.linspace(1,10,opt.how_many_values_per_parameter)):
 		for delay_index, delay in enumerate(np.linspace(10,100,opt.how_many_values_per_parameter)):
-			for buffer_index, buffer in enumerate(np.linspace(10,50,opt.how_many_values_per_parameter)):
+			for buffer_index, buffer in enumerate(np.linspace(5,50,opt.how_many_values_per_parameter)):
 				for fq_index, fq in enumerate([False, True]):
 					opt.rate = int(round(bw))
 					opt.delay = int(round(delay))
@@ -214,13 +241,43 @@ elif opt.run_scenario == "accuracy":
 		if not is_invalid:
 			predictions.append((fq, is_vegas))
 
-	print("invalid", invalid, "total", len(results_dict), "results", results_dict)
+	print("invalid", invalid, "total", len(results_dict))#, "results", results_dict)
 	confusion_matrix_input = list(zip(*predictions))
-	print("confusion_matrix_input", confusion_matrix_input)
+	# print("confusion_matrix_input", confusion_matrix_input)
+	accuracy_score = sklearn.metrics.accuracy_score(*confusion_matrix_input)
+	print("accuracy_score", accuracy_score)
 	confusion_matrix = sklearn.metrics.confusion_matrix(*confusion_matrix_input)
 	print("confusion_matrix", confusion_matrix)
 
+elif opt.run_scenario == "competing_flow":
+	opt.competing_flow = True
 
+	opt.time = 60
+	opt.store_pcaps = True
 
+	print("Starting fq experiment")
+	opt.qdisc = "fq"
+	with virtnet.Manager() as context:
+		client_output = run(context)
 
+	print("Starting pfifo experiment")
+	opt.qdisc = "pfifo"
+	with virtnet.Manager() as context:
+		client_output = run(context)
+
+	del os.environ["START_VEGAS"]
+	del os.environ["START_PCC_CLASSIC"]
+	os.environ["START_PCC_CLASSIC"] = "1"
+	print("Starting fq experiment with PCC_CLASSIC")
+	opt.qdisc = "fq"
+	with virtnet.Manager() as context:
+		client_output = run(context)
+
+	del os.environ["START_VEGAS"]
+	del os.environ["START_PCC_CLASSIC"]
+	os.environ["START_VEGAS"] = "1"
+	opt.qdisc = "pfifo"
+	print("Starting pfifo experiment with VEGAS")
+	with virtnet.Manager() as context:
+		client_output = run(context)
 
