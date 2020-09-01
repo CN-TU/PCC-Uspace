@@ -1634,9 +1634,9 @@ void CUDT::ProcessAck(CPacket& ctrlpkt) {
   int32_t lost_packet_number = max(seq_no-m_iSndLastAck-1, 0);
   if (lost_packet_number > 0) {
     // cout << "lost_packet_number " << lost_packet_number << " seq_no " << seq_no << " m_iSndLastAck " << m_iSndLastAck << endl;
-    if (packet_tracker_->GetPacketId(m_iSndLastAck+1, packet_tracker_->GetPacketLastMsgNo(m_iSndLastAck+1)) == 0) {
-      cout << "pkt_id is zero! msg_no " << msg_no << " seq_no " << seq_no << " m_iSndLastAck " << m_iSndLastAck << " loss1 " << m_iSndLastAck+1 << " loss2 " << m_iSndLastAck+lost_packet_number << " pkt_id " << pkt_id << endl;
-    }
+    // if (packet_tracker_->GetPacketId(m_iSndLastAck+1, packet_tracker_->GetPacketLastMsgNo(m_iSndLastAck+1)) == 0) {
+    //   cout << "pkt_id is zero! msg_no " << msg_no << " seq_no " << seq_no << " m_iSndLastAck " << m_iSndLastAck << " loss1 " << m_iSndLastAck+1 << " loss2 " << m_iSndLastAck+lost_packet_number << " pkt_id " << pkt_id << endl;
+    // }
     add_to_loss_record(m_iSndLastAck+1, m_iSndLastAck+lost_packet_number, false);
   }
   m_iSndLastAck = max(seq_no, (int32_t) m_iSndLastAck);
