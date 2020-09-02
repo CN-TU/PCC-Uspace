@@ -254,6 +254,8 @@ struct CPerfMon {
   int pktFlightSize;
   // RTT, in milliseconds
   double msRTT;
+  // RTT, in milliseconds
+  double msRealRTT;
   // estimated bandwidth, in Mb/s
   double mbpsBandwidth;
   // available UDT sender buffer size

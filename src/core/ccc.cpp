@@ -53,6 +53,7 @@ CCC::CCC() : m_iSYNInterval(CUDT::m_iSYNInterval),
              m_iSndCurrSeqNo(),
              m_iRcvRate(),
              m_iRTT(),
+             m_realRTT(),
              m_pcParam(NULL),
              m_iPSize(0),
              m_UDT(),
@@ -127,6 +128,10 @@ void CCC::setMaxCWndSize(const int& cwnd) {
 
 void CCC::setRTT(const int& rtt) {
   m_iRTT = rtt;
+}
+
+void CCC::setRealRTT(const int& rtt) {
+  m_realRTT = rtt;
 }
 
 void CCC::setUserParam(const char* param, const int& size) {

@@ -591,6 +591,7 @@ void CUDT::open() {
   m_pRNode->m_bOnList = false;
 
   m_iRTT = 10 * m_iSYNInterval;
+  m_realRTT = 0;
   last_rtt_ = 10 * m_iSYNInterval;
   // for (int i = 0; i < MAX_MONITOR; i++) {
   //   m_last_rtt[i] = 5 * m_iSYNInterval;
@@ -870,6 +871,7 @@ POST_CONNECT:
   CInfoBlock::convert(m_pPeerAddr, m_iIPversion, ib.m_piIP);
   if (m_pCache->lookup(&ib) >= 0) {
     m_iRTT = ib.m_iRTT;
+    m_realRTT = ib.m_realRTT;
     m_iBandwidth = ib.m_iBandwidth;
   }
 
@@ -880,6 +882,7 @@ POST_CONNECT:
   m_pCC->setSndCurrSeqNo((int32_t&)m_iSndCurrSeqNo);
   m_pCC->setRcvRate(m_iDeliveryRate);
   m_pCC->setRTT(m_iRTT);
+  m_pCC->setRealRTT(m_realRTT);
   m_pCC->setBandwidth(m_iBandwidth);
   if (m_llMaxBW > 0) {
     m_pCC->setUserParam((char*)&(m_llMaxBW), 8);
@@ -976,6 +979,7 @@ void CUDT::connect(const sockaddr* peer, CHandShake* hs) {
   CInfoBlock::convert(peer, m_iIPversion, ib.m_piIP);
   if (m_pCache->lookup(&ib) >= 0) {
     m_iRTT = ib.m_iRTT;
+    m_realRTT = ib.m_realRTT;
     m_iBandwidth = ib.m_iBandwidth;
   }
 
@@ -986,6 +990,7 @@ void CUDT::connect(const sockaddr* peer, CHandShake* hs) {
   m_pCC->setSndCurrSeqNo((int32_t&)m_iSndCurrSeqNo);
   m_pCC->setRcvRate(m_iDeliveryRate);
   m_pCC->setRTT(m_iRTT);
+  m_pCC->setRealRTT(m_realRTT);
   m_pCC->setBandwidth(m_iBandwidth);
   if (m_llMaxBW > 0) {
     m_pCC->setUserParam((char*)&(m_llMaxBW), 8);
@@ -1095,6 +1100,7 @@ void CUDT::close() {
     ib.m_iIPversion = m_iIPversion;
     CInfoBlock::convert(m_pPeerAddr, m_iIPversion, ib.m_piIP);
     ib.m_iRTT = m_iRTT;
+    ib.m_realRTT = m_realRTT;
     ib.m_iBandwidth = m_iBandwidth;
     m_pCache->update(&ib);
 
@@ -1372,6 +1378,7 @@ void CUDT::sample(CPerfMon* perf, bool clear) {
   perf->pktFlightSize = CSeqNo::seqlen(const_cast<int32_t&>(m_iSndLastAck),
                                        CSeqNo::incseq(m_iSndCurrSeqNo)) - 1;
   perf->msRTT = m_iRTT/1000.0;
+  perf->msRealRTT = m_realRTT/1000.0;
   perf->mbpsBandwidth = m_iBandwidth * m_iPayloadSize * 8.0 / 1000000.0;
 
 #ifndef WIN32
@@ -1615,6 +1622,7 @@ void CUDT::ProcessAck(CPacket& ctrlpkt) {
   packet_tracker_->OnPacketAck(seq_no, msg_no);
   uint64_t rtt_us = packet_tracker_->GetPacketRtt(seq_no, msg_no);
   m_iRTT = (7.0 * m_iRTT + (double)rtt_us) / 8.0;
+  m_realRTT = (7.0 * m_realRTT + (double)rtt_us) / 8.0;
   m_iRTTVar = (m_iRTTVar * 7.0 + abs((double)rtt_us - m_iRTT) * 1.0) / 8.0;
   int32_t size = packet_tracker_->GetPacketSize(seq_no);
 

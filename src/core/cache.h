@@ -251,6 +251,7 @@ class CInfoBlock {
   uint64_t m_ullTimeStamp;
   // RTT
   int m_iRTT;
+  int m_realRTT;
   // estimated bandwidth
   int m_iBandwidth;
   // average loss rate

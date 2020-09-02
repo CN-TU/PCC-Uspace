@@ -1,6 +1,7 @@
 #include "../core/udt.h"
 
 #include <iostream>
+#include <iomanip>
 #include <signal.h>
 
 #ifndef WIN32
@@ -8,6 +9,8 @@
 #include <cstring>
 #include <netdb.h>
 #include <unistd.h>
+#include <cassert>
+#include <chrono>
 #else
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -24,6 +27,7 @@ DWORD WINAPI monitor(LPVOID);
 
 void* wait_for_new_result(void*);
 void* send_things(void*);
+void* monitor2(void*);
 
 void intHandler(int dummy) {
   //TODO (nathan jay): Print useful summary statistics.
@@ -36,6 +40,12 @@ struct socket_couple {
   int connection_id_sender1;
   int connection_id_sender2;
   bool reversed;
+};
+
+struct monitor_struct {
+  UDTSOCKET socket;
+  int64_t interval;
+  string file_name;
 };
 
 #define MIN_RATE 100000.0
@@ -116,9 +126,19 @@ int main(int argc, char* argv[]) {
 
 #ifndef WIN32
   pthread_create(new pthread_t, NULL, monitor, &client);
+  char* file_name_char_array = getenv("file_name_for_logging");
+  if (file_name_char_array) {
+    string file_name_string = string(file_name_char_array);
+    struct monitor_struct* mc = new monitor_struct();
+    mc->socket = client;
+    mc->interval = 10000;
+    mc->file_name = file_name_string;
+    pthread_create(new pthread_t, NULL, monitor2, mc);
+  }
 #else
   CreateThread(NULL, 0, monitor, &client, 0, NULL);
 #endif
+
 
   if (should_send) {
 
@@ -251,7 +271,7 @@ void* wait_for_new_result(void* arg) {
       double new_first_rate = first_sender->sending_rate_;
       double new_second_rate = second_sender->sending_rate_;
       // if (!loss_in_both) {
-      if (!(first_sender->lost_at_least_one_packet_already && second_sender->lost_at_least_one_packet_already)) {
+      if ((!(first_sender->lost_at_least_one_packet_already && second_sender->lost_at_least_one_packet_already)) || (first_sender->lost_at_least_one_packet_already && second_sender->lost_at_least_one_packet_already && first_sender->latest_utility_info_.utility != 1 && second_sender->latest_utility_info_.utility != 1 && !loss_again)) {
         new_first_rate *= 2;
         new_second_rate *= 2;
       }
@@ -340,5 +360,37 @@ DWORD WINAPI monitor(LPVOID s)
 #else
   return 0;
 #endif
+}
+
+void* monitor2(void* arg)
+{
+  assert(arg != NULL);
+  struct monitor_struct mc = *(monitor_struct*) arg;
+
+  UDTSOCKET u = mc.socket;
+  int64_t interval = mc.interval;
+  string file_name = mc.file_name;
+  cout << "Logging to file name " << file_name << endl;
+
+  UDT::TRACEINFO perf;
+  ofstream logfile;
+  logfile.open(file_name);
+
+  logfile << "i,timestamp,RTT(ms)" << endl;
+  for (size_t i=0;;i++) {
+    usleep(interval);
+    i++;
+    if (UDT::ERROR == UDT::perfmon(u, &perf)) {
+      cout << "perfmon: " << UDT::getlasterror().getErrorMessage() << endl;
+      break;
+    }
+    auto current_time = std::chrono::system_clock::now();
+    auto duration_in_seconds = std::chrono::duration<double>(current_time.time_since_epoch());
+    double num_seconds = duration_in_seconds.count();
+
+    logfile << i << "," << fixed << setprecision(numeric_limits<long double>::digits10 + 1) << num_seconds << "," << perf.msRealRTT << endl;
+  }
+
+  return NULL;
 }
 

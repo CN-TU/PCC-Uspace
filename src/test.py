@@ -147,6 +147,7 @@ def run(vnet):
 		if opt.competing_flow:
 			server_popen_iperf = hosts[1].Popen("iperf3 -V -4 -s".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
+		os.environ["file_name_for_logging"] = f"pcaps/{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.txt"
 		if opt.store_pcaps:
 			os.makedirs("pcaps", exist_ok=True)
 			tcpdump_sender_popen = hosts[0].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/sender_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap dst port {opt.cport} or src port {opt.cport} or dst port {opt.cport+10} or src port {opt.cport+10}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)

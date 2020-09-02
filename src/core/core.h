@@ -482,6 +482,7 @@ class CUDT {
   int m_iBandwidth;
   // RTT, in microseconds
   double m_iRTT;
+  double m_realRTT;
   int last_rtt_;
   deque<double> m_last_rtt;
   static const size_t kRTTHistorySize = 100;

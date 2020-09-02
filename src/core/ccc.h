@@ -199,6 +199,7 @@ class UDT_API CCC {
   void setSndCurrSeqNo(const int32_t& seqno);
   void setRcvRate(const int& rcvrate);
   void setRTT(const int& rtt);
+  void setRealRTT(const int& rtt);
 
  protected:
   // UDT constant parameter, SYN
@@ -222,6 +223,7 @@ class UDT_API CCC {
   int m_iRcvRate;
   // current estimated RTT, microsecond
   int m_iRTT;
+  int m_realRTT;
 
   // user defined parameter
   char* m_pcParam;

@@ -57,6 +57,7 @@ CInfoBlock& CInfoBlock::operator=(const CInfoBlock& obj) {
   m_iIPversion = obj.m_iIPversion;
   m_ullTimeStamp = obj.m_ullTimeStamp;
   m_iRTT = obj.m_iRTT;
+  m_realRTT = obj.m_realRTT;
   m_iBandwidth = obj.m_iBandwidth;
   m_iLossRate = obj.m_iLossRate;
   m_iReorderDistance = obj.m_iReorderDistance;
@@ -89,6 +90,7 @@ CInfoBlock* CInfoBlock::clone() {
   obj->m_iIPversion = m_iIPversion;
   obj->m_ullTimeStamp = m_ullTimeStamp;
   obj->m_iRTT = m_iRTT;
+  obj->m_realRTT = m_realRTT;
   obj->m_iBandwidth = m_iBandwidth;
   obj->m_iLossRate = m_iLossRate;
   obj->m_iReorderDistance = m_iReorderDistance;
