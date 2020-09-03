@@ -45,11 +45,10 @@ parser.add_argument('--run_scenario', type=str, default="")
 parser.add_argument('--store_pcaps', action='store_true')
 parser.add_argument('--competing_flow', action='store_true')
 parser.add_argument('--two_iperfs', action='store_true')
+parser.add_argument('--only_iperf', action='store_true')
 
 opt = parser.parse_args()
 print(opt)
-
-
 
 def run_commands(cmds, Popen=False):
 	if type(cmds) is not list:
@@ -140,56 +139,70 @@ def run(vnet):
 			print("mean rtt", mean_rtt)
 			assert mean_rtt >= opt.delay
 
-		if not opt.two_iperfs:
-			server_popen = hosts[1].Popen(f"./app/pccserver recv {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		else:
-			server_popen = hosts[1].Popen("iperf3 -V -4 -s -p 5211".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		protocol_for_main_flow = "tcp"
+		if not opt.only_iperf:
+			if not opt.two_iperfs:
+				protocol_for_main_flow = "udp"
+				server_popen = hosts[1].Popen(f"./app/pccserver recv {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			else:
+				server_popen = hosts[1].Popen("iperf3 -V -4 -s -p 5211".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
 		if opt.competing_flow:
 			server_popen_iperf = hosts[1].Popen("iperf3 -V -4 -s".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 		os.environ["file_name_for_logging"] = f"pcaps/{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.txt"
 		if opt.store_pcaps:
 			os.makedirs("pcaps", exist_ok=True)
-			tcpdump_sender_popen = hosts[0].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/sender_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap dst port {opt.cport} or src port {opt.cport} or dst port {opt.cport+10} or src port {opt.cport+10}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-			tcpdump_receiver_popen = hosts[1].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/receiver_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap dst port {opt.cport} or src port {opt.cport} or dst port {opt.cport+10} or src port {opt.cport+10}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			tcpdump_sender_popens = []
+			tcpdump_receiver_popens = []
 
-		# if opt.store_pcaps:
-		# 	tcpdump_switch_popens = []
-		# 	for interface_name in switch.interfaces.keys():
-		# 		tcpdump_switch_popens.append(subprocess.Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i {interface_name} -w pcaps/switch_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}_{interface_name}.pcap".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+			tcpdump_sender_popens.append(hosts[0].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/sender_{protocol_for_main_flow}_port{opt.cport}_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap dst port {opt.cport} or src port {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+			tcpdump_receiver_popens.append(hosts[1].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/receiver_{protocol_for_main_flow}_port{opt.cport}_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap dst port {opt.cport} or src port {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+
+			if opt.competing_flow:
+				tcpdump_sender_popens.append(hosts[0].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/sender_tcp_port{opt.cport+10}_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap tcp and dst port {opt.cport+10} or src port {opt.cport+10}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+				tcpdump_receiver_popens.append(hosts[1].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/receiver_tcp_port{opt.cport+10}_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap tcp and dst port {opt.cport+10} or src port {opt.cport+10}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
 
 		if opt.competing_flow:
 			client_popen_iperf = hosts[0].Popen(f"iperf3 -V -4 -t {opt.time+number_of_seconds_the_competing_flow_starts_earlier} --cport {opt.cport+10} -c host1".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			time.sleep(number_of_seconds_the_competing_flow_starts_earlier)
 
-		if not opt.two_iperfs:
-			client_popen = hosts[0].Popen(f"./app/pccclient send host1 {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		else:
-			client_popen = hosts[0].Popen(f"iperf3 -V -4 -t {opt.time+number_of_seconds_the_competing_flow_starts_earlier} -p 5211 --cport {opt.cport} -c host1".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		if not opt.only_iperf:
+			if not opt.two_iperfs:
+				client_popen = hosts[0].Popen(f"./app/pccclient send host1 {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			else:
+				client_popen = hosts[0].Popen(f"iperf3 -V -4 -t {opt.time+number_of_seconds_the_competing_flow_starts_earlier} -p 5211 --cport {opt.cport} -c host1".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 		time.sleep(opt.time)
-		client_popen.terminate()
-		out, err = client_popen.stdout.read(), client_popen.stderr.read()
-		if out:
-			print("client out", out.decode("utf-8"))
-		if err:
-			print("client err", err.decode("utf-8"))
-		if opt.competing_flow:
-			client_popen_iperf.terminate()
-			out, err = client_popen_iperf.stdout.read(), client_popen_iperf.stderr.read()
+		if not opt.only_iperf:
+			# print("Terminating")
+			print("returncode before", client_popen.returncode)
+			client_popen.terminate()
+			print("returncode after", client_popen.returncode)
+			out, err = client_popen.stdout.read(), client_popen.stderr.read()
 			if out:
-				print("client iperf out", out.decode("utf-8"))
+				print("client out", out.decode("utf-8"))
 			if err:
-				print("client iperf err", err.decode("utf-8"))
+				print("client err", err.decode("utf-8"))
+			if opt.competing_flow:
+				client_popen_iperf.terminate()
+				out, err = client_popen_iperf.stdout.read(), client_popen_iperf.stderr.read()
+				if out:
+					print("client iperf out", out.decode("utf-8"))
+				if err:
+					print("client iperf err", err.decode("utf-8"))
 
-		client_out = out
+			client_out = out
+		else:
+			client_out = b""
 
-		server_popen.terminate()
-		out, err = server_popen.stdout.read(), server_popen.stderr.read()
-		if out:
-			print("server out", out.decode("utf-8"))
-		if err:
-			print("server err", err.decode("utf-8"))
+		if not opt.only_iperf:
+			server_popen.terminate()
+			out, err = server_popen.stdout.read(), server_popen.stderr.read()
+			if out:
+				print("server out", out.decode("utf-8"))
+			if err:
+				print("server err", err.decode("utf-8"))
 
 		if opt.competing_flow:
 			server_popen_iperf.terminate()
@@ -200,19 +213,21 @@ def run(vnet):
 				print("server iperf err", err.decode("utf-8"))
 
 		if opt.store_pcaps:
-			tcpdump_sender_popen.terminate()
-			out, err = tcpdump_sender_popen.stdout.read(), tcpdump_sender_popen.stderr.read()
-			if out:
-				print("tcpdump out", out.decode("utf-8"))
-			if err:
-				print("tcpdump err", err.decode("utf-8"))
+			for tcpdump_sender_popen in tcpdump_sender_popens:
+				tcpdump_sender_popen.terminate()
+				out, err = tcpdump_sender_popen.stdout.read(), tcpdump_sender_popen.stderr.read()
+				if out:
+					print("tcpdump out", out.decode("utf-8"))
+				if err:
+					print("tcpdump err", err.decode("utf-8"))
 
-			tcpdump_receiver_popen.terminate()
-			out, err = tcpdump_receiver_popen.stdout.read(), tcpdump_receiver_popen.stderr.read()
-			if out:
-				print("tcpdump out", out.decode("utf-8"))
-			if err:
-				print("tcpdump err", err.decode("utf-8"))
+			for tcpdump_receiver_popen in tcpdump_receiver_popens:
+				tcpdump_receiver_popen.terminate()
+				out, err = tcpdump_receiver_popen.stdout.read(), tcpdump_receiver_popen.stderr.read()
+				if out:
+					print("tcpdump out", out.decode("utf-8"))
+				if err:
+					print("tcpdump err", err.decode("utf-8"))
 
 			subprocess.check_output("chmod -R o+rw pcaps".split())
 
@@ -324,3 +339,30 @@ elif opt.run_scenario == "competing_flow":
 	with virtnet.Manager() as context:
 		client_output = run(context)
 
+elif opt.run_scenario == "just_one_flow":
+
+	opt.time = 30
+	opt.store_pcaps = True
+	opt.buffer_size = 10
+	opt.rate = 20
+	opt.delay = 10
+
+	try:
+		del os.environ["START_VEGAS"]
+	except KeyError:
+		pass
+	try:
+		del os.environ["START_PCC_CLASSIC"]
+	except KeyError:
+		pass
+	print("ours experiment")
+	opt.qdisc = "fq"
+	with virtnet.Manager() as context:
+		client_output = run(context)
+
+	print("cubic experiment")
+	opt.qdisc = "fq"
+	opt.only_iperf = True
+	opt.competing_flow = True
+	with virtnet.Manager() as context:
+		client_output = run(context)

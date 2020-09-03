@@ -543,7 +543,7 @@ void PccSender::OnUtilityAvailable(
       } else {
         std::cout << "increase" << std::endl;
         // increase
-        sending_rate_ = sending_rate_ * (1.0 / (1 - 0.025));
+        sending_rate_ = sending_rate_ * (1.0 / (1 - 0.01));
       }
       break;
     case STARTING:
