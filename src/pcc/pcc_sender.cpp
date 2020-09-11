@@ -71,6 +71,7 @@ const size_t kNumIntervalGroupsInProbing = 2;
 const size_t kBitsPerByte = 8;
 // Minimum number of packers per interval.
 const size_t kMinimumPacketsPerInterval = 10;
+const double kMinimumRttMultiplier = 1.5;
 // Number of gradients to average.
 const size_t kAvgGradientSampleSize = 1;
 // The factor that converts average utility gradient to a rate change (in Mbps).
@@ -96,7 +97,7 @@ QuicTime PccSender::ComputeMonitorDuration(
     QuicBandwidth sending_rate,
     QuicTime rtt) {
 
-  return std::max(1.0 * rtt,
+  return std::max(kMinimumRttMultiplier * rtt,
                   kMinimumPacketsPerInterval * kBitsPerByte *
                       kDefaultTCPMSS / sending_rate);
 }
@@ -221,6 +222,10 @@ void PccSender::OnPacketSent(QuicTime sent_time,
   void PccSender::set_pcc_classic() {
     mode_ = PROBING;
     interval_queue_.cc_mode = UtilityMode::PCC_CLASSIC;
+  }
+  void PccSender::set_pcc() {
+    mode_ = PROBING;
+    interval_queue_.cc_mode = UtilityMode::PCC;
   }
   void PccSender::set_vegas() {
     mode_ = VEGAS_LIKE;

@@ -1637,8 +1637,6 @@ void CUDT::ProcessAck(CPacket& ctrlpkt) {
     return;
   }
 
-  // cout << "seq_no " << seq_no << "m_iSndLastAck " << m_iSndLastAck << endl;
-  // assert(!(seq_no<m_iSndLastAck));
   int32_t lost_packet_number = max(seq_no-m_iSndLastAck-1, 0);
   if (lost_packet_number > 0) {
     // cout << "lost_packet_number " << lost_packet_number << " seq_no " << seq_no << " m_iSndLastAck " << m_iSndLastAck << endl;

@@ -4,27 +4,16 @@
 #include <iomanip>
 #include <signal.h>
 
-#ifndef WIN32
 #include <cstdlib>
 #include <cstring>
 #include <netdb.h>
 #include <unistd.h>
 #include <cassert>
 #include <chrono>
-#else
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <wspiapi.h>
-#endif
 
 using namespace std;
 
-#ifndef WIN32
 void* monitor(void*);
-#else
-DWORD WINAPI monitor(LPVOID);
-#endif
-
 void* wait_for_new_result(void*);
 void* send_things(void*);
 void* monitor2(void*);
@@ -48,11 +37,14 @@ struct monitor_struct {
   string file_name;
 };
 
-#define MIN_RATE 100000.0
+#define MIN_RATE 1000000.0
 pthread_mutex_t result_waiter_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_t sending_thread;
 pthread_t sending_thread2;
+
+pthread_t waiting_thread;
+pthread_t waiting_thread2;
 
 int main(int argc, char* argv[]) {
   if (argc < 4 || 0 == atoi(argv[3])) {
@@ -85,24 +77,32 @@ int main(int argc, char* argv[]) {
       UDT::socket(local->ai_family, local->ai_socktype, local->ai_protocol);
   cout << "client1 id " << client << endl;
 
-  UDTSOCKET client2 =
-      UDT::socket(local->ai_family, local->ai_socktype, local->ai_protocol);
-  cout << "client2 id " << client2 << endl;
+  bool only_one_flow = getenv("ONLY_ONE_FLOW");
+  if (only_one_flow) {
+    cout << "Only one flow" << endl;
+  }
+
+  UDTSOCKET client2;
+
+  if (!only_one_flow) {
+    client2 =
+        UDT::socket(local->ai_family, local->ai_socktype, local->ai_protocol);
+    cout << "client2 id " << client2 << endl;
+  }
 
   PccSender* pcc_sender = UDT::get_pcc_sender(client);
   pcc_sender->id = 1;
   pcc_sender->set_rate(MIN_RATE);
+  if (only_one_flow) {
+    pcc_sender->set_vegas();
+  }
 
-  PccSender* pcc_sender2 = UDT::get_pcc_sender(client2);
-  pcc_sender2->id = 2;
-  pcc_sender2->set_rate(MIN_RATE*2);
-
-#ifdef WIN32
-  // Windows UDP issue
-  // For better performance, modify HKLM\System\CurrentControlSet\Services\Afd\
-  // \Parameters\FastSendDatagramThreshold
-  UDT::setsockopt(client, 0, UDT_MSS, new int(1052), sizeof(int));
-#endif
+  PccSender* pcc_sender2;
+  if (!only_one_flow) {
+    pcc_sender2 = UDT::get_pcc_sender(client2);
+    pcc_sender2->id = 2;
+    pcc_sender2->set_rate(MIN_RATE*2);
+  }
 
   freeaddrinfo(local);
 
@@ -117,14 +117,16 @@ int main(int argc, char* argv[]) {
     cout << "connect: " << UDT::getlasterror().getErrorMessage() << endl;
     return 0;
   }
-  // connect to the server, implict bind
-  if (UDT::ERROR == UDT::connect(client2, peer->ai_addr, peer->ai_addrlen)) {
-    cout << "connect: " << UDT::getlasterror().getErrorMessage() << endl;
-    return 0;
+
+  if (!only_one_flow) {
+    // connect to the server, implict bind
+    if (UDT::ERROR == UDT::connect(client2, peer->ai_addr, peer->ai_addrlen)) {
+      cout << "connect: " << UDT::getlasterror().getErrorMessage() << endl;
+      return 0;
+    }
   }
   freeaddrinfo(peer);
 
-#ifndef WIN32
   pthread_create(new pthread_t, NULL, monitor, &client);
   char* file_name_char_array = getenv("file_name_for_logging");
   if (file_name_char_array) {
@@ -135,25 +137,31 @@ int main(int argc, char* argv[]) {
     mc->file_name = file_name_string;
     pthread_create(new pthread_t, NULL, monitor2, mc);
   }
-#else
-  CreateThread(NULL, 0, monitor, &client, 0, NULL);
-#endif
-
 
   if (should_send) {
 
-    struct socket_couple sc1 = {pcc_sender, pcc_sender2, client, client2, false};
-    struct socket_couple sc2 = {pcc_sender2, pcc_sender, client2, client, true};
+    struct socket_couple sc1;
+    struct socket_couple sc2;
+    if (!only_one_flow) {
+      sc1 = {pcc_sender, pcc_sender2, client, client2, false};
+      sc2 = {pcc_sender2, pcc_sender, client2, client, true};
+    }
 
-    pthread_create(new pthread_t, NULL, wait_for_new_result, &sc1);
-    pthread_create(new pthread_t, NULL, wait_for_new_result, &sc2);
+    if (!only_one_flow) {
+      pthread_create(&waiting_thread, NULL, wait_for_new_result, &sc1);
+      pthread_create(&waiting_thread2, NULL, wait_for_new_result, &sc2);
+    }
 
     pthread_create(&sending_thread, NULL, send_things, &client);
-    pthread_create(&sending_thread2, NULL, send_things, &client2);
+    if (!only_one_flow) {
+      pthread_create(&sending_thread2, NULL, send_things, &client2);
+    }
     void* val;
     void* val2;
     pthread_join(sending_thread, &val);
-    pthread_join(sending_thread2, &val2);
+    if (!only_one_flow) {
+      pthread_join(sending_thread2, &val2);
+    }
 
   } else {
     int size = 100000;
@@ -181,6 +189,7 @@ int main(int argc, char* argv[]) {
     delete [] data;
   }
   UDT::cleanup();
+  cout << "Finished main" << endl;
 
   return 1;
 }
@@ -202,7 +211,7 @@ void* wait_for_new_result(void* arg) {
   PccSender* pcc_sender2 = sc.pcc_sender2;
   bool reversed = sc.reversed;
 
-  while (true) {
+  while (!loss_again) {
     while (!pcc_sender->just_got_new_result) {
       pthread_mutex_lock(&(pcc_sender->new_result_mutex));
       pthread_cond_wait(&(pcc_sender->new_result_cond), &(pcc_sender->new_result_mutex));
@@ -230,29 +239,18 @@ void* wait_for_new_result(void* arg) {
       PccSender* first_sender;
       PccSender* second_sender;
 
-      // int first_connection_id = -1;
       int second_connection_id = -1;
 
       if (!reversed) {
         first_sender = pcc_sender;
         second_sender = pcc_sender2;
-        // first_connection_id = sc.connection_id_sender1;
         second_connection_id = sc.connection_id_sender2;
       } else {
         first_sender = pcc_sender2;
         second_sender = pcc_sender;
-        // first_connection_id = sc.connection_id_sender2;
         second_connection_id = sc.connection_id_sender1;
       }
-      // bool loss_in_both = (utility_info_first.actual_sending_rate > utility_info_first.actual_good_sending_rate) && (utility_info_second.actual_sending_rate > utility_info_second.actual_good_sending_rate);
       bool loss_in_both = (first_sender->latest_utility_info_.actual_sending_rate > first_sender->latest_utility_info_.actual_good_sending_rate) && (second_sender->latest_utility_info_.actual_sending_rate > second_sender->latest_utility_info_.actual_good_sending_rate);
-
-      // bool loss_in_one = (first_sender->latest_utility_info_.actual_sending_rate > first_sender->latest_utility_info_.actual_good_sending_rate) || (second_sender->latest_utility_info_.actual_sending_rate > second_sender->latest_utility_info_.actual_good_sending_rate);
-
-      // if (!loss_in_both) {
-      //   loss_in_both_once = false;
-      //   loss_again = false;
-      // }
 
       double maximum_goodput;
       if (first_sender->latest_utility_info_.utility != 1 && second_sender->latest_utility_info_.utility != 1 && first_sender->lost_at_least_one_packet_already && second_sender->lost_at_least_one_packet_already && loss_in_both && !loss_again) {
@@ -260,8 +258,6 @@ void* wait_for_new_result(void* arg) {
         maximum_goodput = first_sender->latest_utility_info_.actual_good_sending_rate+second_sender->latest_utility_info_.actual_good_sending_rate;
       }
 
-      // double throughput_rate_first = utility_info_first.actual_good_sending_rate/utility_info_first.actual_sending_rate;
-      // double throughput_rate_second = utility_info_second.actual_good_sending_rate/utility_info_second.actual_sending_rate;
       double throughput_rate_first = first_sender->latest_utility_info_.actual_good_sending_rate/first_sender->latest_utility_info_.actual_sending_rate;
       double throughput_rate_second = second_sender->latest_utility_info_.actual_good_sending_rate/second_sender->latest_utility_info_.actual_sending_rate;
 
@@ -270,7 +266,6 @@ void* wait_for_new_result(void* arg) {
 
       double new_first_rate = first_sender->sending_rate_;
       double new_second_rate = second_sender->sending_rate_;
-      // if (!loss_in_both) {
       if ((!(first_sender->lost_at_least_one_packet_already && second_sender->lost_at_least_one_packet_already)) || (first_sender->lost_at_least_one_packet_already && second_sender->lost_at_least_one_packet_already && first_sender->latest_utility_info_.utility != 1 && second_sender->latest_utility_info_.utility != 1 && !loss_again)) {
         new_first_rate *= 2;
         new_second_rate *= 2;
@@ -282,21 +277,36 @@ void* wait_for_new_result(void* arg) {
       if (loss_again) {
         first_sender->set_rate(maximum_goodput);
 
-        // pthread_cancel(sending_thread2);
         UDT::close(second_connection_id);
-        // second_sender->set_rate(0);
-        if ((loss_ratio > 1.5 || getenv("START_VEGAS")) && !getenv("START_PCC_CLASSIC")) {
+        if ((loss_ratio > 1.5 || getenv("START_VEGAS")) && !getenv("START_PCC_CLASSIC") && !getenv("START_PCC")) {
           cout << "Starting Vegas" << endl;
           first_sender->set_vegas();
-        } else {
+        } else if ((loss_ratio <= 1.5 || getenv("START_PCC_CLASSIC")) && ! getenv("START_PCC")) {
           cout << "Starting PCC Classic" << endl;
           first_sender->set_pcc_classic();
+        } else if (getenv("START_PCC")) {
+          cout << "Starting PCC" << endl;
+          first_sender->set_pcc();
         }
       }
     }
     pthread_mutex_unlock(&result_waiter_mutex);
     pthread_mutex_unlock(&(pcc_sender->new_result_mutex));
   }
+  if (!reversed) {
+    auto result = pthread_cancel(waiting_thread2);
+    cout << "result " << result << endl;
+    void* val;
+    auto result2 = pthread_join(waiting_thread2, &val);
+    cout << "result2 " << result2 << endl;
+  } else {
+    auto result = pthread_cancel(waiting_thread);
+    cout << "result " << result << endl;
+    void* val;
+    auto result2 = pthread_join(waiting_thread2, &val);
+    cout << "result2 " << result2 << endl;
+  }
+  cout << "Finished waiting_thread" << endl;
 }
 
 void* send_things(void* arg) {
@@ -323,15 +333,12 @@ void* send_things(void* arg) {
       break;
     }
   }
+  cout << "Finished sending" << endl;
   UDT::close(client);
   return 0;
 }
 
-#ifndef WIN32
 void* monitor(void* s)
-#else
-DWORD WINAPI monitor(LPVOID s)
-#endif
 {
   UDTSOCKET u = *(UDTSOCKET*)s;
 
@@ -341,11 +348,7 @@ DWORD WINAPI monitor(LPVOID s)
   cout << "SendRate(Mb/s)\tRTT(ms)\tCTotal\tLoss" << endl;
   int i=0;
   while (true) {
-#ifndef WIN32
     usleep(1000000);
-#else
-    Sleep(1000);
-#endif
     i++;
     if (UDT::ERROR == UDT::perfmon(u, &perf)) {
       cout << "perfmon: " << UDT::getlasterror().getErrorMessage() << endl;
@@ -355,11 +358,9 @@ DWORD WINAPI monitor(LPVOID s)
          << perf.pktSentTotal << "\t" << perf.pktSndLossTotal << endl;
   }
 
-#ifndef WIN32
+  cout << "Finished monitor" << endl;
+
   return NULL;
-#else
-  return 0;
-#endif
 }
 
 void* monitor2(void* arg)
@@ -390,6 +391,7 @@ void* monitor2(void* arg)
 
     logfile << i << "," << fixed << setprecision(numeric_limits<long double>::digits10 + 1) << num_seconds << "," << perf.msRealRTT << endl;
   }
+  cout << "Finished monitor2" << endl;
 
   return NULL;
 }

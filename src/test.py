@@ -12,7 +12,22 @@ import signal
 import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 
-print("sys.version", sys.version)
+try:
+	del os.environ["START_VEGAS"]
+except KeyError:
+	pass
+try:
+	del os.environ["START_PCC_CLASSIC"]
+except KeyError:
+	pass
+try:
+	del os.environ["START_PCC"]
+except KeyError:
+	pass
+try:
+	del os.environ["ONLY_ONE_FLOW"]
+except KeyError:
+	pass
 
 import subprocess
 # import matplotlib
@@ -87,7 +102,7 @@ def execute_popen_and_show_result(command, host=None):
 
 number_of_seconds_the_competing_flow_starts_earlier = 5
 
-def run(vnet):
+def run(vnet, prefix=""):
 
 		start_time = int(time.time() * 1000)
 		"Main functionality"
@@ -137,7 +152,7 @@ def run(vnet):
 			ping_output = [float(item.split()[-2][5:]) for item in ping_output if "time=" in item]
 			mean_rtt = statistics.mean(ping_output)
 			print("mean rtt", mean_rtt)
-			assert mean_rtt >= opt.delay
+			assert mean_rtt >= opt.delay, f"mean_rtt: {mean_rtt}, opt.delay: {opt.delay}"
 
 		protocol_for_main_flow = "tcp"
 		if not opt.only_iperf:
@@ -156,12 +171,13 @@ def run(vnet):
 			tcpdump_sender_popens = []
 			tcpdump_receiver_popens = []
 
-			tcpdump_sender_popens.append(hosts[0].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/sender_{protocol_for_main_flow}_port{opt.cport}_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap dst port {opt.cport} or src port {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
-			tcpdump_receiver_popens.append(hosts[1].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/receiver_{protocol_for_main_flow}_port{opt.cport}_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap dst port {opt.cport} or src port {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+			if not opt.only_iperf:
+				tcpdump_sender_popens.append(hosts[0].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/sender_{prefix}_{protocol_for_main_flow}_port{opt.cport}_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap dst port {opt.cport} or src port {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+				tcpdump_receiver_popens.append(hosts[1].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/receiver_{prefix}_{protocol_for_main_flow}_port{opt.cport}_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap dst port {opt.cport} or src port {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
 
 			if opt.competing_flow:
-				tcpdump_sender_popens.append(hosts[0].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/sender_tcp_port{opt.cport+10}_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap tcp and dst port {opt.cport+10} or src port {opt.cport+10}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
-				tcpdump_receiver_popens.append(hosts[1].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/receiver_tcp_port{opt.cport+10}_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap tcp and dst port {opt.cport+10} or src port {opt.cport+10}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+				tcpdump_sender_popens.append(hosts[0].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/sender_{prefix}_tcp_port{opt.cport+10}_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap tcp and dst port {opt.cport+10} or src port {opt.cport+10}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+				tcpdump_receiver_popens.append(hosts[1].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/receiver_{prefix}_tcp_port{opt.cport+10}_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap tcp and dst port {opt.cport+10} or src port {opt.cport+10}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
 
 		if opt.competing_flow:
 			client_popen_iperf = hosts[0].Popen(f"iperf3 -V -4 -t {opt.time+number_of_seconds_the_competing_flow_starts_earlier} --cport {opt.cport+10} -c host1".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -170,8 +186,12 @@ def run(vnet):
 		if not opt.only_iperf:
 			if not opt.two_iperfs:
 				client_popen = hosts[0].Popen(f"./app/pccclient send host1 {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+				# client_popen = hosts[0].Popen(f"./app/pccclient send host1 {opt.cport}", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+				# client_popen = hosts[0].Popen(f"gdb --args ./app/pccclient send host1 {opt.cport}", shell=True)
 			else:
 				client_popen = hosts[0].Popen(f"iperf3 -V -4 -t {opt.time+number_of_seconds_the_competing_flow_starts_earlier} -p 5211 --cport {opt.cport} -c host1".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+		# client_popen.communicate()
 
 		time.sleep(opt.time)
 		if not opt.only_iperf:
@@ -179,6 +199,7 @@ def run(vnet):
 			print("returncode before", client_popen.returncode)
 			client_popen.terminate()
 			print("returncode after", client_popen.returncode)
+			# import pdb; pdb.set_trace()
 			out, err = client_popen.stdout.read(), client_popen.stderr.read()
 			if out:
 				print("client out", out.decode("utf-8"))
@@ -279,72 +300,6 @@ elif opt.run_scenario == "competing_flow":
 	opt.store_pcaps = True
 	opt.buffer_size = 50
 	opt.rate = 8
-
-	try:
-		del os.environ["START_VEGAS"]
-	except KeyError:
-		pass
-	try:
-		del os.environ["START_PCC_CLASSIC"]
-	except KeyError:
-		pass
-	print("Starting fq experiment")
-	opt.qdisc = "fq"
-	opt.two_iperfs = False
-	with virtnet.Manager() as context:
-		client_output = run(context)
-
-	try:
-		del os.environ["START_VEGAS"]
-	except KeyError:
-		pass
-	try:
-		del os.environ["START_PCC_CLASSIC"]
-	except KeyError:
-		pass
-	opt.two_iperfs = True
-	print("Starting pfifo experiment")
-	opt.qdisc = "pfifo"
-	with virtnet.Manager() as context:
-		client_output = run(context)
-
-	try:
-		del os.environ["START_VEGAS"]
-	except KeyError:
-		pass
-	try:
-		del os.environ["START_PCC_CLASSIC"]
-	except KeyError:
-		pass
-	os.environ["START_PCC_CLASSIC"] = "1"
-	opt.two_iperfs = True
-	# print("Starting fq experiment with PCC_CLASSIC")
-	print("Starting fq experiment with Cubic")
-	opt.qdisc = "fq"
-	with virtnet.Manager() as context:
-		client_output = run(context)
-
-	try:
-		del os.environ["START_VEGAS"]
-	except KeyError:
-		pass
-	try:
-		del os.environ["START_PCC_CLASSIC"]
-	except KeyError:
-		pass
-	opt.two_iperfs = False
-	os.environ["START_VEGAS"] = "1"
-	opt.qdisc = "pfifo"
-	print("Starting pfifo experiment with VEGAS")
-	with virtnet.Manager() as context:
-		client_output = run(context)
-
-elif opt.run_scenario == "just_one_flow":
-
-	opt.time = 30
-	opt.store_pcaps = True
-	opt.buffer_size = 10
-	opt.rate = 20
 	opt.delay = 10
 
 	try:
@@ -355,14 +310,91 @@ elif opt.run_scenario == "just_one_flow":
 		del os.environ["START_PCC_CLASSIC"]
 	except KeyError:
 		pass
+	try:
+		del os.environ["START_PCC"]
+	except KeyError:
+		pass
+	print("Starting fq experiment")
+	opt.qdisc = "fq"
+	opt.two_iperfs = False
+	with virtnet.Manager() as context:
+		client_output = run(context, "competing_flow_fq")
+
+	try:
+		del os.environ["START_VEGAS"]
+	except KeyError:
+		pass
+	try:
+		del os.environ["START_PCC_CLASSIC"]
+	except KeyError:
+		pass
+	try:
+		del os.environ["START_PCC"]
+	except KeyError:
+		pass
+	opt.two_iperfs = True
+	print("Starting pfifo experiment")
+	opt.qdisc = "pfifo"
+	with virtnet.Manager() as context:
+		client_output = run(context, "competing_flow_pfifo")
+
+	try:
+		del os.environ["START_VEGAS"]
+	except KeyError:
+		pass
+	try:
+		del os.environ["START_PCC_CLASSIC"]
+	except KeyError:
+		pass
+	try:
+		del os.environ["START_PCC"]
+	except KeyError:
+		pass
+	os.environ["START_PCC_CLASSIC"] = "1"
+	opt.two_iperfs = True
+	# print("Starting fq experiment with PCC_CLASSIC")
+	print("Starting fq experiment with Cubic")
+	opt.qdisc = "fq"
+	with virtnet.Manager() as context:
+		client_output = run(context, "competing_flow_fq_pcc")
+
+	try:
+		del os.environ["START_VEGAS"]
+	except KeyError:
+		pass
+	try:
+		del os.environ["START_PCC_CLASSIC"]
+	except KeyError:
+		pass
+	try:
+		del os.environ["START_PCC"]
+	except KeyError:
+		pass
+	opt.two_iperfs = False
+	os.environ["START_VEGAS"] = "1"
+	opt.qdisc = "pfifo"
+	print("Starting pfifo experiment with VEGAS")
+	with virtnet.Manager() as context:
+		client_output = run(context, "competing_flow_pfifo_vegas")
+
+elif opt.run_scenario == "just_one_flow":
+
+	opt.time = 30
+	opt.store_pcaps = True
+	opt.buffer_size = 50
+	opt.rate = 10
+	opt.delay = 10
+
+	os.environ["ONLY_ONE_FLOW"] = "1"
+
 	print("ours experiment")
 	opt.qdisc = "fq"
 	with virtnet.Manager() as context:
-		client_output = run(context)
+		client_output = run(context, "just_one_flow_vegas")
 
 	print("cubic experiment")
 	opt.qdisc = "fq"
 	opt.only_iperf = True
 	opt.competing_flow = True
 	with virtnet.Manager() as context:
-		client_output = run(context)
+		client_output = run(context, "just_one_flow_cubic")

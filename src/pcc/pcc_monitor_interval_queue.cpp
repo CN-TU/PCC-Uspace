@@ -224,7 +224,7 @@ void PccMonitorIntervalQueue::OnPacketSent(QuicTime sent_time,
 #endif
 }
 
-size_t counter = 0;
+// size_t counter = 0;
 
 void PccMonitorIntervalQueue::OnCongestionEvent(
     const AckedPacketVector& acked_packets,
@@ -240,19 +240,19 @@ void PccMonitorIntervalQueue::OnCongestionEvent(
   bool has_invalid_utility = false;
   // std::cout << "num_useful_intervals_ " << num_useful_intervals_ << "monitor_intervals_ " << monitor_intervals_.size() << std::endl;
 
-  counter++;
-  bool should_report = counter % 10000 == 0;
-  if (should_report) {
-    std::cout << "reporting " << " acked_packets.size() " << acked_packets.size() << " lost_packets.size() " << lost_packets.size() << " lost_packets[0].bytes_acked " << lost_packets[0].bytes_acked << " lost_packets[0].bytes_lost " << lost_packets[0].bytes_lost << " lost_packets[0].packet_number " << lost_packets[0].packet_number << " lost_packets[0].time " << lost_packets[0].time << std::endl;
-  }
+  // counter++;
+  // bool should_report = counter % 10000 == 0;
+  // if (should_report) {
+  //   std::cout << "reporting " << " acked_packets.size() " << acked_packets.size() << " lost_packets.size() " << lost_packets.size() << " lost_packets[0].bytes_acked " << lost_packets[0].bytes_acked << " lost_packets[0].bytes_lost " << lost_packets[0].bytes_lost << " lost_packets[0].packet_number " << lost_packets[0].packet_number << " lost_packets[0].time " << lost_packets[0].time << std::endl;
+  // }
   for (MonitorInterval& interval : monitor_intervals_) {
 
     assert(interval.end_time > 0);
-    if (should_report) {
-      bool ret = (event_time >= interval.end_time &&
-              interval.bytes_acked + interval.bytes_lost >= interval.bytes_sent);
-      std::cout << "IsUtilityAvailable " << ret << " event_time " << event_time/1000000 << " interval.end_time " << interval.end_time << " interval.bytes_acked " << interval.bytes_acked << " interval.bytes_lost " << interval.bytes_lost << " interval.bytes_sent " << interval.bytes_sent << " interval.is_useful " << interval.is_useful << std::endl;
-    }
+    // if (should_report) {
+    //   bool ret = (event_time >= interval.end_time &&
+    //           interval.bytes_acked + interval.bytes_lost >= interval.bytes_sent);
+    //   std::cout << "IsUtilityAvailable " << ret << " event_time " << event_time/1000000 << " interval.end_time " << interval.end_time << " interval.bytes_acked " << interval.bytes_acked << " interval.bytes_lost " << interval.bytes_lost << " interval.bytes_sent " << interval.bytes_sent << " interval.is_useful " << interval.is_useful << std::endl;
+    // }
 
     if (!interval.is_useful) {
       // Skips useless monitor intervals.

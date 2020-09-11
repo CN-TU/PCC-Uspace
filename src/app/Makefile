@@ -9,6 +9,7 @@ ifndef arch
 endif
 
 CCFLAGS = -Wall -D$(os) -I../core -finline-functions -O3
+# CCFLAGS = -Wall -D$(os) -I../core -finline-functions -O0
 
 ifeq ($(arch), IA32)
   CCFLAGS += -DIA32 #-mcpu=pentiumpro -march=pentiumpro -mmmx -msse

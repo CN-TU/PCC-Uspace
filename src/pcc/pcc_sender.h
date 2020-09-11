@@ -63,7 +63,14 @@ class QUIC_EXPORT_PRIVATE PccSender
 #else
           {
 #endif
- public:
+public:
+  #ifdef QUIC_PORT
+    const RttStats* rtt_stats_;
+    QuicRandom* random_;
+  #else
+    QuicTime avg_rtt_;
+  #endif
+
   // Queue of monitor intervals with pending utilities.
   PccMonitorIntervalQueue interval_queue_;
 
@@ -131,6 +138,7 @@ class QUIC_EXPORT_PRIVATE PccSender
 
   void set_rate(const double rate);
   void set_pcc_classic();
+  void set_pcc();
   void set_vegas();
 
 #ifdef QUIC_PORT
@@ -249,13 +257,6 @@ class QUIC_EXPORT_PRIVATE PccSender
   float avg_gradient_;
   // The gradient samples that have been averaged.
   std::queue<float> gradient_samples_;
-
-#ifdef QUIC_PORT
-  const RttStats* rtt_stats_;
-  QuicRandom* random_;
-#else
-  QuicTime avg_rtt_;
-#endif
 
   // The number of consecutive rate changes in a single direction
   // before we accelerate the rate of change.
