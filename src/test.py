@@ -296,7 +296,7 @@ elif opt.run_scenario == "accuracy":
 elif opt.run_scenario == "competing_flow":
 	opt.competing_flow = True
 
-	opt.time = 30
+	opt.time = 10
 	opt.store_pcaps = True
 	opt.buffer_size = 50
 	opt.rate = 8
@@ -319,6 +319,9 @@ elif opt.run_scenario == "competing_flow":
 	opt.two_iperfs = False
 	with virtnet.Manager() as context:
 		client_output = run(context, "competing_flow_fq")
+	quit()
+
+
 
 	try:
 		del os.environ["START_VEGAS"]
@@ -350,7 +353,7 @@ elif opt.run_scenario == "competing_flow":
 		del os.environ["START_PCC"]
 	except KeyError:
 		pass
-	os.environ["START_PCC_CLASSIC"] = "1"
+	# os.environ["START_PCC_CLASSIC"] = "1"
 	opt.two_iperfs = True
 	# print("Starting fq experiment with PCC_CLASSIC")
 	print("Starting fq experiment with Cubic")

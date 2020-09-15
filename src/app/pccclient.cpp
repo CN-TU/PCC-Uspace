@@ -29,6 +29,7 @@ struct socket_couple {
   int connection_id_sender1;
   int connection_id_sender2;
   bool reversed;
+  bool only_one_flow;
 };
 
 struct monitor_struct {
@@ -80,6 +81,8 @@ int main(int argc, char* argv[]) {
   bool only_one_flow = getenv("ONLY_ONE_FLOW");
   if (only_one_flow) {
     cout << "Only one flow" << endl;
+  } else {
+    cout << "Two flows" << endl;
   }
 
   UDTSOCKET client2;
@@ -93,9 +96,6 @@ int main(int argc, char* argv[]) {
   PccSender* pcc_sender = UDT::get_pcc_sender(client);
   pcc_sender->id = 1;
   pcc_sender->set_rate(MIN_RATE);
-  if (only_one_flow) {
-    pcc_sender->set_vegas();
-  }
 
   PccSender* pcc_sender2;
   if (!only_one_flow) {
@@ -142,13 +142,13 @@ int main(int argc, char* argv[]) {
 
     struct socket_couple sc1;
     struct socket_couple sc2;
+    sc1 = {pcc_sender, pcc_sender2, client, client2, false, only_one_flow};
     if (!only_one_flow) {
-      sc1 = {pcc_sender, pcc_sender2, client, client2, false};
-      sc2 = {pcc_sender2, pcc_sender, client2, client, true};
+      sc2 = {pcc_sender2, pcc_sender, client2, client, true, only_one_flow};
     }
 
+    pthread_create(&waiting_thread, NULL, wait_for_new_result, &sc1);
     if (!only_one_flow) {
-      pthread_create(&waiting_thread, NULL, wait_for_new_result, &sc1);
       pthread_create(&waiting_thread2, NULL, wait_for_new_result, &sc2);
     }
 
@@ -210,6 +210,7 @@ void* wait_for_new_result(void* arg) {
   PccSender* pcc_sender = sc.pcc_sender1;
   PccSender* pcc_sender2 = sc.pcc_sender2;
   bool reversed = sc.reversed;
+  bool only_one_flow = sc.only_one_flow;
 
   while (!loss_again) {
     while (!pcc_sender->just_got_new_result) {
@@ -232,7 +233,7 @@ void* wait_for_new_result(void* arg) {
       utility_info_second = pcc_sender->latest_utility_info_;
     }
 
-    if (received_first && received_second) {
+    if ((only_one_flow && received_first) || (received_first && received_second)) {
       received_first = false;
       received_second = false;
 
@@ -253,32 +254,44 @@ void* wait_for_new_result(void* arg) {
       bool loss_in_both = (first_sender->latest_utility_info_.actual_sending_rate > first_sender->latest_utility_info_.actual_good_sending_rate) && (second_sender->latest_utility_info_.actual_sending_rate > second_sender->latest_utility_info_.actual_good_sending_rate);
 
       double maximum_goodput;
-      if (first_sender->latest_utility_info_.utility != 1 && second_sender->latest_utility_info_.utility != 1 && first_sender->lost_at_least_one_packet_already && second_sender->lost_at_least_one_packet_already && loss_in_both && !loss_again) {
-        loss_again = loss_in_both;
-        maximum_goodput = first_sender->latest_utility_info_.actual_good_sending_rate+second_sender->latest_utility_info_.actual_good_sending_rate;
+      if ((only_one_flow && first_sender->lost_at_least_one_packet_already && first_sender->latest_utility_info_.utility != 1 && !loss_again) || (first_sender->latest_utility_info_.utility != 1 && second_sender->latest_utility_info_.utility != 1 && first_sender->lost_at_least_one_packet_already && second_sender->lost_at_least_one_packet_already && loss_in_both && !loss_again)) {
+        loss_again = true;
+        maximum_goodput = first_sender->latest_utility_info_.actual_good_sending_rate;
+        if (!only_one_flow) {
+          maximum_goodput += second_sender->latest_utility_info_.actual_good_sending_rate;
+        }
       }
 
-      double throughput_rate_first = first_sender->latest_utility_info_.actual_good_sending_rate/first_sender->latest_utility_info_.actual_sending_rate;
-      double throughput_rate_second = second_sender->latest_utility_info_.actual_good_sending_rate/second_sender->latest_utility_info_.actual_sending_rate;
+      double loss_ratio;
+      if (!only_one_flow) {
+        double throughput_rate_first = first_sender->latest_utility_info_.actual_good_sending_rate/first_sender->latest_utility_info_.actual_sending_rate;
+        double throughput_rate_second = second_sender->latest_utility_info_.actual_good_sending_rate/second_sender->latest_utility_info_.actual_sending_rate;
 
-      double loss_ratio = throughput_rate_first/throughput_rate_second;
-      cout << "reversed " << reversed << " loss_again " << loss_again << " throughput_rate_first " << throughput_rate_first << " throughput_rate_second " << throughput_rate_second << " loss_ratio " << loss_ratio << endl;
+        loss_ratio = throughput_rate_first/throughput_rate_second;
+        cout << "reversed " << reversed << " loss_again " << loss_again << " throughput_rate_first " << throughput_rate_first << " throughput_rate_second " << throughput_rate_second << " loss_ratio " << loss_ratio << " first_sender->lost_at_least_one_packet_already " << first_sender->lost_at_least_one_packet_already << " second_sender->lost_at_least_one_packet_already " << second_sender->lost_at_least_one_packet_already << endl;
+      }
 
       double new_first_rate = first_sender->sending_rate_;
       double new_second_rate = second_sender->sending_rate_;
-      if ((!(first_sender->lost_at_least_one_packet_already && second_sender->lost_at_least_one_packet_already)) || (first_sender->lost_at_least_one_packet_already && second_sender->lost_at_least_one_packet_already && first_sender->latest_utility_info_.utility != 1 && second_sender->latest_utility_info_.utility != 1 && !loss_again)) {
+      // if ((only_one_flow && !(first_sender->lost_at_least_one_packet_already)) || (!first_sender->lost_at_least_one_packet_already && !second_sender->lost_at_least_one_packet_already && first_sender->latest_utility_info_.utility != 1 && second_sender->latest_utility_info_.utility != 1 && !loss_again)) {
+      if ((only_one_flow && !(first_sender->lost_at_least_one_packet_already)) || (first_sender->latest_utility_info_.utility != 1 && second_sender->latest_utility_info_.utility != 1 && !loss_again)) {
         new_first_rate *= 2;
         new_second_rate *= 2;
       }
 
       first_sender->set_rate(new_first_rate);
-      second_sender->set_rate(new_second_rate);
+
+      if (!only_one_flow) {
+        second_sender->set_rate(new_second_rate);
+      }
 
       if (loss_again) {
         first_sender->set_rate(maximum_goodput);
 
-        UDT::close(second_connection_id);
-        if ((loss_ratio > 1.5 || getenv("START_VEGAS")) && !getenv("START_PCC_CLASSIC") && !getenv("START_PCC")) {
+        if (!only_one_flow) {
+          UDT::close(second_connection_id);
+        }
+        if (only_one_flow || ((loss_ratio > 1.5 || getenv("START_VEGAS")) && !getenv("START_PCC_CLASSIC") && !getenv("START_PCC"))) {
           cout << "Starting Vegas" << endl;
           first_sender->set_vegas();
         } else if ((loss_ratio <= 1.5 || getenv("START_PCC_CLASSIC")) && ! getenv("START_PCC")) {
@@ -293,20 +306,23 @@ void* wait_for_new_result(void* arg) {
     pthread_mutex_unlock(&result_waiter_mutex);
     pthread_mutex_unlock(&(pcc_sender->new_result_mutex));
   }
-  if (!reversed) {
-    auto result = pthread_cancel(waiting_thread2);
-    cout << "result " << result << endl;
-    void* val;
-    auto result2 = pthread_join(waiting_thread2, &val);
-    cout << "result2 " << result2 << endl;
-  } else {
-    auto result = pthread_cancel(waiting_thread);
-    cout << "result " << result << endl;
-    void* val;
-    auto result2 = pthread_join(waiting_thread2, &val);
-    cout << "result2 " << result2 << endl;
+
+  if (!only_one_flow) {
+    if (!reversed) {
+      auto result = pthread_cancel(waiting_thread2);
+      cout << "result " << result << endl;
+      void* val;
+      auto result2 = pthread_join(waiting_thread2, &val);
+      cout << "result2 " << result2 << endl;
+    } else {
+      auto result = pthread_cancel(waiting_thread);
+      cout << "result " << result << endl;
+      void* val;
+      auto result2 = pthread_join(waiting_thread2, &val);
+      cout << "result2 " << result2 << endl;
+    }
+    cout << "Finished waiting_thread" << endl;
   }
-  cout << "Finished waiting_thread" << endl;
 }
 
 void* send_things(void* arg) {
