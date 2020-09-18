@@ -1,0 +1,50 @@
+% This is samplepaper.tex, a sample chapter demonstrating the
+% LLNCS macro package for Springer Computer Science proceedings;
+% Version 2.20 of 2017/10/04
+%
+\documentclass[runningheads]{llncs}
+%
+\usepackage{graphicx}
+% Used for displaying a sample figure. If possible, figure files should
+% be included in EPS format.
+%
+% If you use the hyperref package, please uncomment the following line
+% to display URLs in blue roman font according to Springer's eBook style:
+% \renewcommand\UrlFont{\color{blue}\rmfamily}
+
+\begin{document}
+%
+\title{Detecting Fair Queuing to Enable Low-Latency and High-Throughput Congestion Control}
+%
+%\titlerunning{Abbreviated paper title}
+% If the paper title is too long for the running head, you can set
+% an abbreviated paper title here
+%
+\author{Maximilian Bachl\inst{1}\orcidID{0000-0001-9482-7428} \and
+Joachim Fabini\inst{2,3}\orcidID{0000-0002-8285-1591} \and
+Tanja Zseby\inst{3}\orcidID{0000-0002-5391-467X}}
+%
+\authorrunning{M. Bachl et al.}
+% First names are abbreviated in the running head.
+% If there are more than two authors, 'et al.' is used.
+%
+\institute{TU Wien, Vienna, Austria
+\email{firstname.lastname@tuwien.ac.at}}
+%
+\maketitle              % typeset the header of the contribution
+%
+\begin{abstract}
+Low delay is an explicit requirement for applications such as cloud gaming and video conferencing. Delay-based congestion control can achieve the same throughput but significantly smaller delay than loss-based one and is thus ideal for these scenarios. However, when a delay- and a loss-based flow share a bottleneck, the loss-based one can ``steal'' all the bandwidth and the delay-based one ``starves''. Fair queuing at the bottleneck link, which isolates each flow and provides the same bandwidth for everyone, solves this problem. However, so far no end host based algorithm to detect fair queuing exists. Our contribution is the development of an algorithm that detects fair queuing at flow startup and chooses delay-based congestion control in this case. Otherwise, loss-based congestion control can be used as a backup option. Results show that our algorithm reliably detects fair queuing and can decide between delay- and loss-based congestion control to enable better congestion control. 
+
+\keywords{Congestion Control  \and Active Measurements \and Fair Queuing \and Queue Management.}
+\end{abstract}
+%
+%
+%
+\section{Introduction}
+
+Bla. 
+
+\bibliography{fq_detection}
+
+\end{document}

@@ -98,7 +98,7 @@ plt.plot(*zip(*with_correct_time))
 plt.tight_layout()
 
 plt.ylim(bottom=0)
-plt.savefig(f"plots/throughput_{interval}_{('_'.join(pcap_file.split('_')[1:]))}.pdf", bbox_inches = 'tight', pad_inches = 0)
+# plt.savefig(f"plots/throughput_{interval}_{('_'.join(pcap_file.split('_')[1:]))}.pdf", bbox_inches = 'tight', pad_inches = 0)
 plt.savefig(f"plots/throughput_{interval}_{('_'.join(pcap_file.split('_')[1:]))}.png", bbox_inches = 'tight', pad_inches = 0, dpi=200)
 
 plt.close()
@@ -116,7 +116,7 @@ plt.plot(ack_timestamps, rtts)
 plt.tight_layout()
 
 plt.ylim(bottom=0)
-plt.savefig(f"plots/rtt_{interval}_{('_'.join(pcap_file.split('_')[1:]))}.pdf", bbox_inches = 'tight', pad_inches = 0)
+# plt.savefig(f"plots/rtt_{interval}_{('_'.join(pcap_file.split('_')[1:]))}.pdf", bbox_inches = 'tight', pad_inches = 0)
 plt.savefig(f"plots/rtt_{interval}_{('_'.join(pcap_file.split('_')[1:]))}.png", bbox_inches = 'tight', pad_inches = 0, dpi=200)
 # plt.show()
 

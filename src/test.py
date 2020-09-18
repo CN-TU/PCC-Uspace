@@ -296,10 +296,10 @@ elif opt.run_scenario == "accuracy":
 elif opt.run_scenario == "competing_flow":
 	opt.competing_flow = True
 
-	opt.time = 10
+	opt.time = 20
 	opt.store_pcaps = True
-	opt.buffer_size = 50
-	opt.rate = 8
+	opt.buffer_size = 100
+	opt.rate = 50
 	opt.delay = 10
 
 	try:
@@ -319,9 +319,6 @@ elif opt.run_scenario == "competing_flow":
 	opt.two_iperfs = False
 	with virtnet.Manager() as context:
 		client_output = run(context, "competing_flow_fq")
-	quit()
-
-
 
 	try:
 		del os.environ["START_VEGAS"]
@@ -382,9 +379,9 @@ elif opt.run_scenario == "competing_flow":
 
 elif opt.run_scenario == "just_one_flow":
 
-	opt.time = 30
+	opt.time = 20
 	opt.store_pcaps = True
-	opt.buffer_size = 50
+	opt.buffer_size = 100
 	opt.rate = 10
 	opt.delay = 10
 
