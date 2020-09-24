@@ -1,8 +1,281 @@
 
+@misc{taht_flow_2018,
+	title = {The {Flow} {Queue} {CoDel} {Packet} {Scheduler} and {Active} {Queue} {Management} {Algorithm}},
+	url = {https://tools.ietf.org/html/rfc8290},
+	language = {en},
+	urldate = {2019-10-11},
+	author = {Taht, D. and Hoeiland-Joergensen, T. and Gettys, J. and Dumazet, E. and McKenney, P.},
+	year = {2018},
+	file = {Snapshot:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/FNJA66W6/rfc8290.html:text/html}
+}
+
 @article{cardwell_bbr:_2016,
 	title = {{BBR}: {Congestion}-{Based} {Congestion} {Control}},
 	urldate = {2019-10-11},
 	journal = {ACM Queue},
 	author = {Cardwell, Neal and Cheng, Yuchung and Gunn, C. Stephen and Yeganeh, Soheil Hassas and Jacobson, Van},
 	year = {2016}
+}
+
+@misc{dumazet_pkt_sched:_2013,
+	title = {pkt\_sched: fq: {Fair} {Queue} packet scheduler [{LWN}.net]},
+	url = {https://lwn.net/Articles/565421/},
+	urldate = {2019-10-11},
+	author = {Dumazet, Eric},
+	year = {2013},
+	file = {pkt_sched\: fq\: Fair Queue packet scheduler [LWN.net]:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/GM39QQTK/565421.html:text/html}
+}
+
+@inproceedings{bachl_rax_2019,
+	title = {Rax: {Deep} {Reinforcement} {Learning} for {Congestion} {Control}},
+	booktitle = {{ICC}},
+	publisher = {IEEE},
+	author = {Bachl, Maximilian and Zseby, Tanja and Fabini, Joachim},
+	year = {2019}
+}
+
+@inproceedings{hock_experimental_2017,
+	title = {Experimental evaluation of {BBR} congestion control},
+	abstract = {BBR is a recently proposed congestion control. Instead of using packet loss as congestion signal, like many currently used congestion controls, it uses an estimate of the available bottleneck link bandwidth to determine its sending rate. BBR tries to provide high link utilization while avoiding to create queues in bottleneck buffers. The original publication of BBR shows that it can deliver superior performance compared to Cubic TCP in some environments. This paper provides an independent and extensive experimental evaluation of BBR at higher speeds. The experimental setup uses BBR's Linux kernel 4.9 implementation and typical data rates of 10Gbit/s and 1 Gbit/s at the bottleneck link. The experiments vary the flows' round-trip times, the number of flows, and buffer sizes at the bottleneck. The evaluation considers throughput, queuing delay, packet loss, and fairness. On the one hand, the intended behavior of BBR could be observed with our experiments. On the other hand, some severe inherent issues such as increased queuing delays, unfairness, and massive packet loss were also detected. The paper provides an in-depth discussion of BBR's behavior in different experiment setups.},
+	booktitle = {{ICNP}},
+	author = {Hock, Mario and Bless, Roland and Zitterbart, Martina},
+	year = {2017},
+	keywords = {Throughput, Bandwidth, Delays, Internet, Linux, telecommunication congestion control, Packet loss, queueing theory, available bottleneck link bandwidth, BBR behavior, BBR congestion control, BBR Linux kernel 4.9 implementation, bit rate 1.0 Gbit/s, bit rate 10.0 Gbit/s, bottleneck buffers, computer network performance evaluation, congestion signal, delays, high link utilization, massive packet loss},
+	file = {IEEE Xplore Abstract Record:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/E5QQRJRU/8117540.html:text/html;IEEE Xplore Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/AYLSSR73/Hock et al. - 2017 - Experimental evaluation of BBR congestion control.pdf:application/pdf}
+}
+
+@inproceedings{turkovic_interactions_2019,
+	title = {Interactions between {Congestion} {Control} {Algorithms}},
+	abstract = {Congestion control algorithms are crucial in achieving high utilization while preventing overloading the network. Over the years, many different congestion control algorithms have been developed, each trying to improve over others in specific situations. However, their interactions and co-existence has, to date, not been thoroughly evaluated, which is the focus of this paper. Through head-to-head comparisons of loss-based, delay-based and hybrid types of congestion control algorithms, we reveal that fairness in resources claimed is often not achieved, especially when flows sharing a link have different round-trip times or belong to different groups.},
+	booktitle = {{TMA}},
+	author = {Turkovic, Belma and Kuipers, Fernando A. and Uhlig, Steve},
+	year = {2019},
+	keywords = {Throughput, Bandwidth, Delays, transport protocols, Linux, telecommunication congestion control, Servers, congestion control algorithms, delay-based type, hybrid type, Indexes, loss-based type, round-trip times},
+	file = {IEEE Xplore Abstract Record:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/QCBSZ7ER/8784674.html:text/html;IEEE Xplore Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/9C3FFZJN/Turkovic et al. - 2019 - Interactions between Congestion Control Algorithms.pdf:application/pdf}
+}
+
+@article{turkovic_fifty_2019,
+	title = {Fifty {Shades} of {Congestion} {Control}: {A} {Performance} and {Interactions} {Evaluation}},
+	abstract = {Congestion control algorithms are crucial in achieving high utilization while preventing overloading the network. Over the years, many different congestion control algorithms have been developed, each trying to improve in specific situations. However, their interactions and co-existence has, to date, not been thoroughly evaluated, which is the focus of this paper. Through head-to-head comparisons of representatives from loss-based, delay-based and hybrid types of congestion control algorithms, we reveal that fairness in resources claimed is often not attained, especially when flows sharing a link have different RTTs.},
+	urldate = {2020-06-08},
+	journal = {arXiv:1903.03852 [cs]},
+	author = {Turkovic, Belma and Kuipers, Fernando A. and Uhlig, Steve},
+	year = {2019},
+	keywords = {Computer Science - Networking and Internet Architecture},
+	file = {arXiv Fulltext PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/2BRYRZZV/Turkovic et al. - 2019 - Fifty Shades of Congestion Control A Performance .pdf:application/pdf;arXiv.org Snapshot:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/HW96BT6D/1903.html:text/html}
+}
+
+@inproceedings{hock_tcp_2017,
+	title = {{TCP} {LoLa}: {Congestion} {Control} for {Low} {Latencies} and {High} {Throughput}},
+	abstract = {TCP LoLa is a new delay-based congestion control that supports both, low queuing delay and high network utilization in high speed wide-area networks. This is particularly useful for traffic mixes consisting of bandwidth demanding and delay sensitive flows (e.g., long file transfer and interactive "web 2.0" traffic). TCP LoLa keeps the queuing delay at the bottleneck link low around a fixed target threshold value. This target value is independent from the number of flows sharing the bottleneck. TCP LoLa achieves high link utilization and attains convergence to fairness even among flows with different round-trip times, due to its novel mechanism called "fair flow balancing".},
+	booktitle = {{LCN}},
+	author = {Hock, Mario and Neumeister, Felix and Zitterbart, Martina and Bless, Roland},
+	month = oct,
+	year = {2017},
+	keywords = {telecommunication traffic, Throughput, Bandwidth, Delays, Internet, transport protocols, telecommunication congestion control, queueing theory, delays, high link utilization, bandwidth demanding, Congestion control, convergence, Convergence, delay sensitive flows, delay-based congestion control, fair flow balancing, fixed target threshold value, high network utilization, high speed wide-area networks, interactive web 2.0 traffic, long file transfer, low queuing delay, Receivers, TCP LoLa, traffic mixes},
+	file = {IEEE Xplore Abstract Record:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/A4I7VVJA/8109356.html:text/html}
+}
+
+@inproceedings{dong_pcc_2018,
+	title = {{PCC} vivace: online-learning congestion control},
+	booktitle = {{NSDI}},
+	author = {Dong, Mo and Meng, Tong and Zarchy, Doron and Arslan, Engin and Gilad, Yossi and Godfrey, P Brighten and Schapira, Michael},
+	year = {2018}
+}
+
+@inproceedings{jay_deep_2019,
+	title = {A {Deep} {Reinforcement} {Learning} {Perspective} on {Internet} {Congestion} {Control}},
+	abstract = {We present and investigate a novel and timely application domain for deep reinforcement learning (RL): Internet congestion control. Congestion control is the core networking task of modulating traf...},
+	language = {en},
+	urldate = {2020-06-28},
+	booktitle = {{ICML}},
+	author = {Jay, Nathan and Rotman, Noga and Godfrey, Brighten and Schapira, Michael and Tamar, Aviv},
+	year = {2019},
+	file = {Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/AGT24NH8/Jay et al. - 2019 - A Deep Reinforcement Learning Perspective on Inter.pdf:application/pdf;Snapshot:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/IL3YVLT9/jay19a.html:text/html}
+}
+
+@inproceedings{fejes_who_2019,
+	title = {Who will {Save} the {Internet} from the {Congestion} {Control} {Revolution}?},
+	abstract = {Active queue management (AQM) techniques have evolved in the recent years, after defining the bufferbloat problem. In parallel novel congestion control (CC) algorithms have been developed to achieve better data transport performance, often assuming simple tail dropping buffers. On the other hand, AQM algorithms usually assume legacy CC (Cubic). Though all of the novel AQM and CC algorithms improve the performance under these assumptions, their co-existence has not or only partially been tested so far. Similarly, router buffer sizing was studied mainly in the 2000s, also assuming traditional CC and tail dropping buffers. In this paper we show that combining the different AQMs and CCs evolved in the past few years results in poor fairness, because assumptions used during development do not hold in this heterogeneous case. We also show that while a non-traditional AQM, using core-stateless resource sharing control, has the potential to harmonize conflicting CCs, it suffers from deployment issues. We argue that when dimensioning router buffers in networks where connections with different CCs coexist, the right choice of AQM is more important than the size of the buffer itself.},
+	booktitle = {Workshop on {Buffer} {Sizing}},
+	publisher = {ACM},
+	author = {Fejes, Ferenc and Gombos, Gerg{\H o} and Laki, S{\'a}ndor and N{\'a}das, Szilveszter},
+	year = {2019},
+	keywords = {AQM, Buffer Sizing, Congestion Control, Fairness},
+	file = {Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/LLM6NQBI/Fejes et al. - 2019 - Who will Save the Internet from the Congestion Con.pdf:application/pdf}
+}
+
+@inproceedings{fejes_incompatibility_2020,
+	title = {On the {Incompatibility} of {Scalable} {Congestion} {Controls} over the {Internet}},
+	abstract = {In addition to classic ones, a new family of congestion controls regarded as {\textquotedblleft}scalable{\textquotedblright} has recently emerged. Scalable congestion control exploits ECN to provide much finer control as rate scales, enabling reactions proportional to the congestion level. Nowadays, different initiatives propose the use of Scalable congestion control over the public Internet, with the separation of Scalable and Classic flows. Similar to classic approaches, the evolution of Scalable congestion control has also begun as BBRv2 implemented a {\textquotedblleft}DCTCP-inspired{\textquotedblright} ECN mechanism. In this paper, we investigate the compatibility of two available Scalable congestion controls, Data Center TCP, and Google{\textquoteright}s recent proposal called BBRv2, and evaluate them with different ECN marking strategies. Our evaluation relies on numerous measurements carried out in our testbed with 1 to 10Gbps bottleneck capacities and heterogeneous round trip times. At the bottleneck, the ECN marking of two traditional AQMs (STEP and PI2) most commonly proposed for Scalable flows and a non-traditional core-stateless AQM (CSAQM) using in-network resource sharing control is examined. After showing compatibility issues, we conclude that as long as the end-to-end flows control resource sharing, it will be tough to create a new, evolved congestion control that is fair to legacy solutions, and its deployment does not harm the Internet.},
+	author = {Fejes, Mr Ferenc and Gombos, Mr Gergo and Laki, Mr S{\'a}ndor and N{\'a}das, Mr Szilveszter},
+	year = {2020},
+	file = {Fejes et al. - On the Incompatibility of Scalable Congestion Cont.pdf:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/CA6LI2FV/Fejes et al. - On the Incompatibility of Scalable Congestion Cont.pdf:application/pdf}
+}
+
+@inproceedings{jarschel_evaluation_2011,
+	title = {An {Evaluation} of {QoE} in {Cloud} {Gaming} {Based} on {Subjective} {Tests}},
+	abstract = {Cloud Gaming is a new kind of service, which combines the successful concepts of Cloud Computing and Online Gaming. It provides the entire game experience to the users remotely from a data center. The player is no longer dependent on a specific type or quality of gaming hardware, but is able to use common devices. The end device only needs a broadband internet connection and the ability to display High Definition (HD) video. While this may reduce hardware costs for users and increase the revenue for developers by leaving out the retail chain, it also raises new challenges for service quality in terms of bandwidth and latency for the underlying network. In this paper we present the results of a subjective user study we conducted into the user-perceived quality of experience (QoE) in Cloud Gaming. We design a measurement environment, that emulates this new type of service, define tests for users to assess the QoE, derive Key Influence Factors (KFI) and influences of content and perception from our results.},
+	booktitle = {{IMIS}},
+	author = {Jarschel, Michael and Schlosser, Daniel and Scheuring, Sven and Ho{\ss}feld, Tobias},
+	month = jun,
+	year = {2011},
+	keywords = {Quality of service, Streaming media, Servers, Hardware, Delay, broadband Internet connection, cloud computing, cloud gaming, Cloud Gaming, computer games, data center, Games, gaming hardware, high definition video, key influence factors, online gaming, QoE, quality of experience, retail chain, service quality, Software, Survey},
+	file = {IEEE Xplore Abstract Record:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/9BAZ83W5/5976180.html:text/html;IEEE Xplore Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/BH25EAIM/Jarschel et al. - 2011 - An Evaluation of QoE in Cloud Gaming Based on Subj.pdf:application/pdf}
+}
+
+@article{elbamby_toward_2018,
+	title = {Toward {Low}-{Latency} and {Ultra}-{Reliable} {Virtual} {Reality}},
+	abstract = {VR is expected to be one of the killer applications in 5G networks. However, many technical bottlenecks and challenges need to be overcome to facilitate its wide adoption. In particular, VR requirements in terms of high throughput, low latency, and reliable communication call for innovative solutions and fundamental research cutting across several disciplines. In view of the above, this article discusses the challenges and enablers for ultra-reliable and low-latency VR. Furthermore, in an interactive VR gaming arcade case study, we show that a smart network design that leverages the use of mmWave communication, edge computing, and proactive caching can achieve the future vision of VR over wireless.},
+	journal = {IEEE Network},
+	author = {Elbamby, Mohammed S. and Perfecto, Cristina and Bennis, Mehdi and Doppler, Klaus},
+	year = {2018},
+	keywords = {Streaming media, Wireless communication, Delays, Servers, Reliability, mobile computing, 5G mobile communication, cache storage, edge computing, Headphones, interactive VR gaming arcade case study, millimetre wave communication, mmWave communication, proactive caching, reliable communication call, smart network design, technical bottlenecks, telecommunication network reliability, ultra-reliable virtual reality, virtual reality, Virtual reality, VR requirements},
+	file = {IEEE Xplore Abstract Record:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/NT4Z9X2J/8329628.html:text/html;IEEE Xplore Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/GLIG8PCV/Elbamby et al. - 2018 - Toward Low-Latency and Ultra-Reliable Virtual Real.pdf:application/pdf}
+}
+
+@inproceedings{li_5g_2018,
+	title = {{5G} {URLLC}: {Design} {Challenges} and {System} {Concepts}},
+	abstract = {The upcoming fifth generation (5G) wireless communication system is expected to support a broad range of newly emerging applications on top of the regular cellular mobile broadband services. One of the key usage scenarios in the scope of 5G is ultra-reliable and low-latency communications (URLLC). Among the active researchers from both academy and industry, one common view is that URLLC will play an essential role in providing connectivity for the new services and applications from vertical domains, such as factory automation, autonomous driving and so on. The most important key performance indicators (KPIs) related to URLLC are latency, reliability and availability. In this paper, after brief discussion on the design challenges related to URLLC use cases, we present an overview of the available technology components from 3GPP Rel-15 and potential ones from Rel-16. In addition, coordinated multi-cell resource allocation methods are studied. From the system level simulation results in an urban macro environment, it can be observed that effective multi-cell cooperation, more specifically soft combining, can lead to a significant gain in terms of URLLC capacity.},
+	booktitle = {{ISWCS}},
+	author = {Li, Zexian and Uusitalo, Mikko A. and Shariatmadari, Hamidreza and Singh, Bikramjit},
+	year = {2018},
+	keywords = {Reliability, latency, 5G mobile communication, telecommunication network reliability, 3G mobile communication, 3GPP, 3GPP Rel-15, 5G, 5G URLLC capacity, 5G wireless communication system, Automation, cellular mobile broadband services, cellular radio, coordinated multicell resource allocation methods, factory automation, fifth generation wireless communication system, Interference, key performance indicators, KPI, low-latency communications, muiti-cell/multi-TRP (Tx/Rx Point) coordination, OFDM, reliability, resource allocation, system level simulation results, ultrareliable low-latency communications, URLLC},
+	file = {IEEE Xplore Abstract Record:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/CN5TL7GI/8491078.html:text/html;IEEE Xplore Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/WDCNG9S4/Li et al. - 2018 - 5G URLLC Design Challenges and System Concepts.pdf:application/pdf}
+}
+
+@inproceedings{arun_copa_2018,
+	title = {Copa: {Practical} delay-based congestion control for the internet},
+	booktitle = {15th {USENIX} {Symposium} on {Networked} {Systems} {Design} and {Implementation} ({NSDI} 18)},
+	author = {Arun, Venkat and Balakrishnan, Hari},
+	year = {2018},
+	pages = {329--342}
+}
+
+@article{mittal_timely_2015,
+	title = {{TIMELY}: {RTT}-based {Congestion} {Control} for the {Datacenter}},
+	volume = {45},
+	issn = {0146-4833},
+	shorttitle = {{TIMELY}},
+	url = {https://doi.org/10.1145/2829988.2787510},
+	doi = {10.1145/2829988.2787510},
+	abstract = {Datacenter transports aim to deliver low latency messaging together with high throughput. We show that simple packet delay, measured as round-trip times at hosts, is an effective congestion signal without the need for switch feedback. First, we show that advances in NIC hardware have made RTT measurement possible with microsecond accuracy, and that these RTTs are sufficient to estimate switch queueing. Then we describe how TIMELY can adjust transmission rates using RTT gradients to keep packet latency low while delivering high bandwidth. We implement our design in host software running over NICs with OS-bypass capabilities. We show using experiments with up to hundreds of machines on a Clos network topology that it provides excellent performance: turning on TIMELY for OS-bypass messaging over a fabric with PFC lowers 99 percentile tail latency by 9X while maintaining near line-rate throughput. Our system also outperforms DCTCP running in an optimized kernel, reducing tail latency by \$13\$X. To the best of our knowledge, TIMELY is the first delay-based congestion control protocol for use in the datacenter, and it achieves its results despite having an order of magnitude fewer RTT signals (due to NIC offload) than earlier delay-based schemes such as Vegas.},
+	number = {4},
+	urldate = {2020-09-18},
+	journal = {ACM SIGCOMM Computer Communication Review},
+	author = {Mittal, Radhika and Lam, Vinh The and Dukkipati, Nandita and Blem, Emily and Wassel, Hassan and Ghobadi, Monia and Vahdat, Amin and Wang, Yaogong and Wetherall, David and Zats, David},
+	month = aug,
+	year = {2015},
+	keywords = {delay-based congestion control, datacenter transport, os-bypass, rdma},
+	pages = {537--550},
+	file = {Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/2KU6SKBL/Mittal et al. - 2015 - TIMELY RTT-based Congestion Control for the Datac.pdf:application/pdf}
+}
+
+@inproceedings{hock_toward_2016,
+	title = {Toward {Coexistence} of {Different} {Congestion} {Control} {Mechanisms}},
+	doi = {10.1109/LCN.2016.94},
+	abstract = {Interactive and delay-sensitive applications constitute an important and growing part of the Internet. Today, low delays can only be achieved if there are no congested links along the path. At a bottleneck, the commonly used congestion control mechanisms induce high queuing delay and packet loss. Specialized congestion control mechanisms achieving a low queuing delay in an otherwise congested network exist. However, if their flows share a bottleneck with traditionally congestion controlled flows, they get suppressed or loose their low-delay property. This paper presents three approaches - Separate Paths, Separate Queues and Limited Queue - that enable coexistence of congestion control mechanisms that are optimized for different goals, e.g., interactive applications and bulk transfers. The measurement results show that concurrent operation of different congestion control mechanisms can be successfully implemented this way.},
+	booktitle = {2016 {IEEE} 41st {Conference} on {Local} {Computer} {Networks} ({LCN})},
+	author = {Hock, Mario and Bless, Roland and Zitterbart, Martina},
+	month = nov,
+	year = {2016},
+	keywords = {Throughput, Bandwidth, Delays, Internet, telecommunication congestion control, Packet loss, queueing theory, Congestion control, queuing delay, Aggregates, congestion control mechanism, limited queue, Low delay, packet loss, separate paths, separate queues, Software-defined Networking, Switches},
+	pages = {567--570},
+	file = {IEEE Xplore Abstract Record:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/6TD72Q6G/7796842.html:text/html;IEEE Xplore Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/P6W6S6XE/Hock et al. - 2016 - Toward Coexistence of Different Congestion Control.pdf:application/pdf}
+}
+
+@inproceedings{yuan-cheng_lai_improving_2001,
+	title = {Improving the performance of {TCP} {Vegas} in a heterogeneous environment},
+	doi = {10.1109/ICPADS.2001.934869},
+	abstract = {Many results indicate that TCP Vegas exhibits better throughput and higher stability than TCP Reno in homogeneous cases where a single version exists, but it performs poorly in heterogeneous cases where two versions coexist. Hence users are delaying, even protesting, the adoption of TCP Vegas. The difference in performance is due to the fact that Reno vibrates in the high throughput level and Vegas almost stabilizes in the low level. We propose two simple approaches to address this problem, the RED (random early discard) approach and parameter adjustments to Vegas. These approaches enable Vegas to achieve its fair share of bandwidth, even gaining an advantage over Reno, encouraging users to switch their TCP from Reno to Vegas.},
+	booktitle = {Proceedings. {Eighth} {International} {Conference} on {Parallel} and {Distributed} {Systems}. {ICPADS} 2001},
+	author = {Yuan-Cheng Lai},
+	month = jun,
+	year = {2001},
+	note = {ISSN: 1521-9097},
+	keywords = {Protocols, Throughput, Bandwidth, Internet, transport protocols, Computer science, TCP Vegas, Switches, bandwidth, heterogeneous environment, parameter adjustments, Propagation delay, random early discard approach, TCP Reno},
+	pages = {581--587},
+	file = {IEEE Xplore Abstract Record:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/6YADFTIC/934869.html:text/html;IEEE Xplore Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/TQDNG67R/Yuan-Cheng Lai - 2001 - Improving the performance of TCP Vegas in a hetero.pdf:application/pdf}
+}
+
+@article{awdeh_comparing_2004,
+	title = {Comparing {TCP} variants in presence of reverse traffic},
+	volume = {40},
+	issn = {0013-5194},
+	doi = {10.1049/el:20040472},
+	abstract = {A comparison of the performance of transport control protocol (TCP) congestion control variants: Reno, Vegas, and SACK in the presence of varying reverse traffic is presented. A new metric called adjusted utilisation, which is based on both link utilisation and fairness, is introduced in the comparison.},
+	number = {11},
+	journal = {Electronics Letters},
+	author = {Awdeh, R.Y. and Akhtar, S.},
+	month = may,
+	year = {2004},
+	note = {Conference Name: Electronics Letters},
+	keywords = {transport protocols, telecommunication congestion control, telecommunication network routing, TCP Vegas, TCP Reno, adjusted utilisation, congestion control variants, fairness index, link utilisation, reverse traffic connections, TCP SACK, TCP variants, transport control protocol},
+	pages = {706--708},
+	file = {IEEE Xplore Abstract Record:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/MELME9L7/1302821.html:text/html;IEEE Xplore Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/MY7WHCAY/Awdeh and Akhtar - 2004 - Comparing TCP variants in presence of reverse traf.pdf:application/pdf}
+}
+
+@article{brakmo_tcp_1995,
+	title = {{TCP} {Vegas}: {End} to end congestion avoidance on a global {Internet}},
+	volume = {13},
+	number = {8},
+	journal = {IEEE Journal on selected Areas in communications},
+	author = {Brakmo, Lawrence S. and Peterson, Larry L.},
+	year = {1995},
+	note = {Publisher: IEEE},
+	pages = {1465--1480}
+}
+
+@inproceedings{dong_pcc_2015,
+	title = {{PCC}: {Re}-architecting congestion control for consistent high performance},
+	booktitle = {12th {USENIX} {Symposium} on {Networked} {Systems} {Design} and {Implementation} ({NSDI} 15)},
+	author = {Dong, Mo and Li, Qingxi and Zarchy, Doron and Godfrey, P Brighten and Schapira, Michael},
+	year = {2015},
+	pages = {395--408}
+}
+
+@article{ha_cubic_2008,
+	title = {{CUBIC}: a new {TCP}-friendly high-speed {TCP} variant},
+	volume = {42},
+	number = {5},
+	journal = {ACM SIGOPS operating systems review},
+	author = {Ha, Sangtae and Rhee, Injong and Xu, Lisong},
+	year = {2008},
+	note = {Publisher: ACM New York, NY, USA},
+	pages = {64--74}
+}
+
+@article{gu_udt_2007,
+	title = {{UDT}: {UDP}-based data transfer for high-speed wide area networks},
+	volume = {51},
+	number = {7},
+	journal = {Computer Networks},
+	author = {Gu, Yunhong and Grossman, Robert L},
+	year = {2007},
+	note = {Publisher: Elsevier},
+	pages = {1777--1799}
+}
+
+@misc{handley_tcp_2012,
+	title = {{TCP} {Extensions} for {Multipath} {Operation} with {Multiple} {Addresses}},
+	url = {https://tools.ietf.org/html/rfc6824},
+	language = {en},
+	urldate = {2020-09-23},
+	author = {Handley, Mark and Bonaventure, Olivier and Raiciu, Costin and Ford, Alan},
+	year = {2012},
+	file = {Snapshot:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/BLV9MV2J/rfc6824.html:text/html}
+}
+
+@article{iyengar_quic_2018,
+	title = {{QUIC}: {A} {UDP}-based multiplexed and secure transport},
+	journal = {Internet Engineering Task Force, Internet-Draft draftietf-quic-transport-17},
+	author = {Iyengar, Jana and Thomson, Martin},
+	year = {2018}
+}
+
+@article{allman_tcp_1999,
+	title = {{TCP} congestion control},
+	author = {Allman, Mark and Paxson, Vern and Stevens, Wright and {others}},
+	year = {1999},
+	note = {Publisher: RFC 2581, april}
 }

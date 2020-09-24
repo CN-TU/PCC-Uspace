@@ -172,8 +172,8 @@ def run(vnet, prefix=""):
 			tcpdump_receiver_popens = []
 
 			if not opt.only_iperf:
-				tcpdump_sender_popens.append(hosts[0].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/sender_{prefix}_{protocol_for_main_flow}_port{opt.cport}_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap dst port {opt.cport} or src port {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
-				tcpdump_receiver_popens.append(hosts[1].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/receiver_{prefix}_{protocol_for_main_flow}_port{opt.cport}_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap dst port {opt.cport} or src port {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+				tcpdump_sender_popens.append(hosts[0].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/sender_{prefix}_{protocol_for_main_flow}_port{opt.cport}_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.buffer_size}_{opt.time}_{start_time}.pcap dst port {opt.cport} or src port {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+				tcpdump_receiver_popens.append(hosts[1].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/receiver_{prefix}_{protocol_for_main_flow}_port{opt.cport}_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.buffer_size}_{opt.time}_{start_time}.pcap dst port {opt.cport} or src port {opt.cport}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
 
 			if opt.competing_flow:
 				tcpdump_sender_popens.append(hosts[0].Popen(f"/usr/sbin/tcpdump -s {opt.bytes_to_capture} -i eth0 -w pcaps/sender_{prefix}_tcp_port{opt.cport+10}_{opt.qdisc}_{opt.delay}_{opt.rate}_{opt.time}_{start_time}.pcap tcp and dst port {opt.cport+10} or src port {opt.cport+10}".split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE))
@@ -260,15 +260,15 @@ if opt.run_scenario == "":
 elif opt.run_scenario == "accuracy":
 	import sklearn.metrics
 	results_dict = {}
-	for bw_index, bw in enumerate(np.linspace(1,10,opt.how_many_values_per_parameter)):
+	for bw_index, bw in enumerate(np.linspace(1,50,opt.how_many_values_per_parameter)):
 		for delay_index, delay in enumerate(np.linspace(10,100,opt.how_many_values_per_parameter)):
-			for buffer_index, buffer in enumerate(np.linspace(5,50,opt.how_many_values_per_parameter)):
+			for buffer_index, buffer in enumerate(np.linspace(1,100,opt.how_many_values_per_parameter)):
 				for fq_index, fq in enumerate([False, True]):
 					opt.rate = int(round(bw))
 					opt.delay = int(round(delay))
 					opt.buffer_size = int(round(buffer))
 					opt.qdisc = "fq" if fq else "pfifo"
-					opt.time = 5
+					opt.time = 10
 
 					with virtnet.Manager() as context:
 						client_output = run(context)

@@ -4,17 +4,40 @@
 %
 \documentclass[runningheads]{llncs}
 %
+\usepackage{subfig}
 \usepackage{graphicx}
+\usepackage{cite}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage[english]{babel}
+\usepackage{xcolor}
+\usepackage[nomain, toc, acronym]{glossaries}
 % Used for displaying a sample figure. If possible, figure files should
 % be included in EPS format.
 %
 % If you use the hyperref package, please uncomment the following line
 % to display URLs in blue roman font according to Springer's eBook style:
-% \renewcommand\UrlFont{\color{blue}\rmfamily}
+\renewcommand\UrlFont{\color{blue}\rmfamily}
+
+\newacronym{cc}{CC}{Congestion Control}
+\newacronym{cca}{CCA}{Congestion Control Algorithm}
+\newacronym{aqm}{AQM}{Active Queue Management}
+\newacronym{rtt}{RTT}{Round Trip Time}
+\newacronym{fq}{FQ}{Fair Queuing}
+\newacronym{bdp}{BDP}{Bandwidth Delay Product}
+\newacronym{qoe}{QoE}{Quality of Experience}
+
+\usepackage{amsmath,amssymb,amsfonts}
+\newcommand{\mynote}[3]{
+    \fbox{\bfseries\sffamily\scriptsize#1}
+    {\small$\blacktriangleright$\textsf{\emph{\color{#3}{#2}}}$\blacktriangleleft$}}
+
+\newcommand{\todo}[1]{\mynote{TODO}{#1}{red}}
+\newcommand{\noteMax}[1]{\mynote{Max}{#1}{green}}
 
 \begin{document}
 %
-\title{Detecting Fair Queuing to Enable Low-Latency and High-Throughput Congestion Control}
+\title{Detecting Fair Queuing to Enable Better Congestion Control}
 %
 %\titlerunning{Abbreviated paper title}
 % If the paper title is too long for the running head, you can set
@@ -28,13 +51,13 @@ Tanja Zseby\inst{3}\orcidID{0000-0002-5391-467X}}
 % First names are abbreviated in the running head.
 % If there are more than two authors, 'et al.' is used.
 %
-\institute{TU Wien, Vienna, Austria
+\institute{TU Wien, Vienna, Austria; 
 \email{firstname.lastname@tuwien.ac.at}}
 %
 \maketitle              % typeset the header of the contribution
 %
 \begin{abstract}
-Low delay is an explicit requirement for applications such as cloud gaming and video conferencing. Delay-based congestion control can achieve the same throughput but significantly smaller delay than loss-based one and is thus ideal for these scenarios. However, when a delay- and a loss-based flow share a bottleneck, the loss-based one can ``steal'' all the bandwidth and the delay-based one ``starves''. Fair queuing at the bottleneck link, which isolates each flow and provides the same bandwidth for everyone, solves this problem. However, so far no end host based algorithm to detect fair queuing exists. Our contribution is the development of an algorithm that detects fair queuing at flow startup and chooses delay-based congestion control in this case. Otherwise, loss-based congestion control can be used as a backup option. Results show that our algorithm reliably detects fair queuing and can decide between delay- and loss-based congestion control to enable better congestion control. 
+Low delay is an explicit requirement for applications such as cloud gaming and video conferencing. Delay-based congestion control can achieve the same throughput but significantly smaller delay than loss-based one and is thus ideal for these scenarios. However, when a delay- and a loss-based flow share a bottleneck, the loss-based one can ``steal'' all the bandwidth and the delay-based one ``starves''. Fair queuing at the bottleneck link, which isolates each flow and provides the same bandwidth for everyone, solves this problem. However, so far no end host based algorithm to detect fair queuing exists. Our contribution is the development of an algorithm that detects fair queuing at flow startup and chooses delay-based congestion control in this case. Otherwise, loss-based congestion control can be used as a backup option. Results show that our algorithm reliably detects fair queuing and can achieve low delay and high throughput in case fair queuing is detected. 
 
 \keywords{Congestion Control  \and Active Measurements \and Fair Queuing \and Queue Management.}
 \end{abstract}
@@ -42,9 +65,208 @@ Low delay is an explicit requirement for applications such as cloud gaming and v
 %
 %
 \section{Introduction}
+\label{sec:introduction}
 
-Bla. 
+Emerging applications such as cloud gaming \cite{jarschel_evaluation_2011} and virtual reality \cite{elbamby_toward_2018} applications require high throughput and low delay. Furthermore, for 5G, ultra low latency communications have been made a priority \cite{li_5g_2018}. We argue that for achieving high throughput as well as low delay, congestion control must be taken into account. 
 
+\textit{Delay-based} \glspl{cca} were proposed to provide high throughput and low delay for network flows. They use the queuing delay as an indication of congestion and lower their throughput as soon as the delay increases. Such approaches have been proposed in the last century \cite{brakmo_tcp_1995} and recently have seen a surge in popularity \cite{arun_copa_2018,hock_tcp_2017,mittal_timely_2015,cardwell_bbr:_2016}. While loss-based \glspl{cca} fulfill their goal of low delay and high throughput, they cannot handle competing flows with different \glspl{cca} well. This is especially prevalent when they have to compete against loss-based \glspl{cca}. The problem is that loss-based \glspl{cca} are more ``aggressive''. While the delay-based ones already back away as soon as queuing delay increases, the loss-based ones continue increasing their throughput until the buffer is full and packet loss occurs. This results in the loss-based flows gaining all the bandwidth and the delay-based ones ``starving'' \cite{hock_toward_2016,yuan-cheng_lai_improving_2001,awdeh_comparing_2004}.
+
+This unfairness can be mitigated by using \gls{fq} at the bottleneck link, isolating each flow from all other flows and assigning each flow an equal share of bandwidth \cite{dumazet_pkt_sched:_2013}. Then, the loss-based flows cannot obtain the bandwidth of the loss-based flows anymore. In this case, delay-based \glspl{cca} fulfill their goal of high bandwidth and low delay. 
+
+While \gls{fq} solves many problems regarding \gls{cc}, it is still not ubiquitously deployed in every bottleneck link. If, however, flows could know if there's \gls{fq} or not, they could dynamically adapt their congestion control. If there is \gls{fq} they would use a delay-based \gls{cca} and otherwise a loss-based one. Our contribution is the design and evaluation of such a mechanism. This mechanism determines the presence of \gls{fq} during the startup phase of a flow's \gls{cca} and, at the end of the startup, sets the \gls{cca} accordingly. 
+
+We show that this solution reliably determines the presence of fair queuing and that by using this approach, queuing delay can be considerably lowered while keeping throughput high. While our mechanism is beneficial for network flows in general, we argue that it is most useful for long-running delay-sensitive flows, such as cloud gaming, video conferencing etc. 
+
+To make our work reproducible and to encourage further research, we make the code, the results and the figures publicly available\footnote{\url{https://github.com/CN-TU/PCC-Uspace}}. 
+
+\section{Related work}
+
+\section{Concept}
+\label{sec:concept}
+
+The overall concept is the following:
+\begin{enumerate}
+\item During flow startup, determine if \gls{fq} is used at the bottleneck or not.
+\item If this is determined, change to a delay-based \gls{cca} if \gls{fq} is used and to a loss-based one otherwise.
+\end{enumerate}
+
+\subsection{Algorithm to determine the presence of \gls{fq}}
+
+%\begin{figure}
+%\centering
+%\includegraphics[width=1\columnwidth]{{"figures/fq_illustration_throughput"}.pdf}
+%\caption{Sending rate}
+%\label{fig:throughput}
+%\end{figure}
+%
+%\begin{figure}
+%\includegraphics[width=1\columnwidth]{{"figures/fq_illustration_goodput_no_fq"}.pdf}
+%\caption{Receiving rate (goodput) in case the bottleneck link doesn't use \gls{fq}. Flow 2, which sends more also manages to get more data through the bottleneck.}
+%\label{fig:goodput_no_fq}
+%\end{figure}
+%
+%\begin{figure}
+%\includegraphics[width=1\columnwidth]{{"figures/fq_illustration_goodput_fq"}.pdf}
+%\caption{Receiving rate (goodput) in case the bottleneck link uses \gls{fq}. Flow 2, which sends more gets as much data through the bottleneck as flow 1.}
+%\label{fig:goodput_fq}
+%\end{figure}
+
+\begin{figure}
+\centering
+\subfloat[Sending rate]{\includegraphics[width=0.33\columnwidth]{{"figures/fq_illustration_throughput"}.pdf}
+\label{fig:throughput}}
+\subfloat[Receiving rate (no \gls{fq}).]{\includegraphics[width=0.33\columnwidth]{{"figures/fq_illustration_goodput_no_fq"}.pdf}
+\label{fig:goodput_no_fq}}
+\subfloat[Receiving rate (\gls{fq}).]{\includegraphics[width=0.33\columnwidth]{{"figures/fq_illustration_goodput_fq"}.pdf}
+\label{fig:goodput_fq}}
+\caption{An example illustrating our proposed flow startup mechanism. Figure \ref{fig:throughput} shows the sending rate, \ref{fig:goodput_no_fq} the receiving rate in case there's no \gls{fq} and \ref{fig:goodput_fq} the receiving rate if there is \gls{fq}.}
+\label{fig:illustration}
+\end{figure}
+
+The algorithm to determine the presence of \gls{fq} works as follows (seen from the sender's point of view):
+\begin{enumerate}
+\item Launch two concurrent flows, flow 1 and flow 2. Initialize flow 1 with some starting sending rate and flow 2 with two times that rate. 
+\item After every \gls{rtt}, if no packet loss occurred, double the sending rate of both flows. 
+\item If packet loss occurred in both flows in the previous \gls{rtt}, calculate the following metric: 
+\begin{align}
+\textit{loss ratio} &= \frac{\left(\frac{\textit{sending rate of flow 1}}{\textit{receiving rate of flow 1}}\right)}{\left(\frac{\textit{sending rate of flow 2}}{\textit{receiving rate of flow 2}}\right)} \\
+&= \frac{\textit{sending rate of flow 1}\times \textit{receiving rate of flow 2}}{\textit{receiving rate of flow 1} \times \textit{sending rate of flow 2}}
+\end{align}
+Basically, this metric indicates if flow 2, which has a higher sending rate, also achieves a higher receiving rate (goodput) than flow 1. If this is the case, there's no \gls{fq}, otherwise there is. 
+\item If \gls{fq} is used, the $\textit{loss ratio}$ is 2, otherwise it is 1. We choose 1.5 as the cutoff value. 
+\end{enumerate}
+
+Figure~\ref{fig:throughput}, \ref{fig:goodput_no_fq} and \ref{fig:goodput_fq} schematically illustrate this mechanism. We assume a sender being connected to a receiver, with a bottleneck link between them. On this bottleneck link, the queue is either managed by \gls{fq} or by a drop tail buffer (no \gls{fq}). \autoref{fig:throughput} shows how the sending rate before the bottleneck link is doubled after each \gls{rtt}. Furthermore, flow 2 has double the sending rate of flow 1 \noteMax{Figures take up too much space. Is it better to put them next to each other? The actual problem is the nonsensical Springer format.}. 
+
+Figure~\ref{fig:goodput_no_fq} shows the receiving rate at the receiver after the bottleneck link, if this bottleneck link has a drop tail buffer without \gls{fq}. In the third \gls{rtt} the sending rate exceeds the link speed of the bottleneck and thus the receiving rate is smaller than the sending rate. Because no \gls{fq} is employed, flow 2 manages to have a receiving rate two times the one of flow 1. 
+
+Figure~\ref{fig:goodput_fq}, on the other side, shows the receiving rate of the two flows after the bottleneck link in case \gls{fq} is deployed. In the third \gls{rtt}, flow 1 and flow 2 achieve the same receiving rate because of the \gls{fq}. 
+
+\subsection{Simple delay-based \gls{cc}}
+
+If \gls{fq} is detected, a simple delay-based \gls{cc} is used from then on. Our algorithm is based on the two following simple rules:
+\begin{enumerate}
+\item If $\textit{current rtt} \leq \textit{smallest rtt ever measured on the connection} + 5\textit{ms}$ then increase the sending rate by 1\%.
+\item Otherwise ($\textit{current rtt} > \textit{smallest rtt ever measured on the connection} + 5\textit{ms}$) decrease the sending rate by 5\%.
+\end{enumerate}
+
+This \gls{cca} is meant as a simple proof-of-concept to demonstrate the efficacy of our \gls{fq} detection mechanism but we do not claim it to be optimal in any way. 
+
+\subsection{Fallback loss-based \gls{cc}}
+
+If the absence of \gls{fq} detected, a loss based \gls{cc} is used as a fallback. We use the algorithm \textit{PCC} proposed by \cite{dong_pcc_2015}. In simple terms, this \gls{cca} aims to maximize a utility function, which strives for high throughput and low packet loss. However, it is reasonably aggressive and does not starve when competing with other loss-based \glspl{cca} such as Cubic \cite{ha_cubic_2008}.
+
+\section{Implementation}
+
+We base our implementation on the code of \textit{PCC Vivace} \cite{dong_pcc_2018}, which in turn is an improved version of the \cite{dong_pcc_2015}. The PCC code is based on the \textit{UDT} library \cite{gu_udt_2007}, which is a library that provides a reliable transport protocol similar to TCP on top of UDP. This approach is similar to the QUIC \cite{iyengar_quic_2018}. An advantage of implementing our approach on top of UDP is that it is easier to develop and modify since no kernel module needs to be created and that it is more secure since the code is isolated in a user space process. 
+
+\subsection{Deployment}
+
+Our approach of detecting \gls{fq} relies on using two concurrent flows between the sender and the receiver. This means that during flow startup, data is transmitted in two flows. To be able to recombine the data from the both flows, the receiver has to be aware of the fact that the two flows belong together. Thus, the receiver has to be aware of the fact that the two flows belong together and also has to be able to recombine the data. This seems like a problem regarding deployment since solutions that require multiple parties to implement are generally hard to deploy on a wide scale in the internet. This can be seen for example when looking at the deployment of IPv6, which requires the participation of every router on the way and every end device. However, since multipath TCP \cite{handley_tcp_2012} and QUIC are becoming increasingly prevalent, we think that the actual obstacles to deployment of our solution are not too high and are constantly decreasing \noteMax{Reference needed}.
+
+\section{Results}
+
+For the evaluation we use the network emulation library \texttt{py-virtnet}\footnote{\url{https://pypi.org/project/py-virtnet/}}.
+
+\subsection{Accuracy of the \gls{fq} detection mechanism}
+
+To evaluate if our proposed mechanism correctly recognizes, we perform experiments using a wide range of network configurations: We vary bandwidth from 1 to 50\,Mbps, delay from 10 to 100\,ms and the buffer size from 1 to 50 packets, using a grid of these parameters. For each parameter, we take 5 values. Thus, we run experiments with 125 different configurations. For each run each configuration once with \gls{fq} and once without. Results show that for experiments without \gls{fq} (using drop tail), in 95\% of cases, the absence of \gls{fq} was correctly detected and in 5\% cases, our algorithm detected \gls{fq} even though there was no \gls{fq}. For experiments, during which \gls{fq} was actually deployed on the bottleneck link, this was correctly detected in 92\% of cases and wrongly in 8\% of the time. 
+
+\subsection{Delay- vs.~loss-based \gls{cc}}
+
+\begin{figure}[h]
+\centering
+\subfloat[Throughput (receiving rate)]{%
+  \includegraphics[width=\columnwidth]{{"figures/plots/throughput_1_just_one_flow_cubic_tcp_port9010_fq_10_10_20_1600183264284.pcap"}.pdf}%
+  \label{fig:just_one_flow_tcp_throughput}
+}\\
+\subfloat[\gls{rtt}]{%
+  \includegraphics[width=\columnwidth]{{"figures/plots/rtt_1_just_one_flow_cubic_tcp_port9010_fq_10_10_20_1600183264284.pcap"}.pdf}%
+  \label{fig:just_one_flow_tcp_delay}
+}
+\caption{Throughput and delay of a flow controlled by the loss-based \gls{cca} Cubic on a link with a speed of 10\,Mbps, a delay of 10\,ms and a buffer size of 100 packets.}
+\label{fig:just_one_flow_tcp}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\subfloat[Throughput (receiving rate)]{%
+  \includegraphics[width=\columnwidth]{{"figures/plots/throughput_1_just_one_flow_vegas_udp_port9000_fq_10_10_20_1600183241479.pcap"}.pdf}%
+}\\
+\subfloat[\gls{rtt}]{%
+  \includegraphics[width=\columnwidth]{{"figures/plots/rtt_1_just_one_flow_vegas_udp_port9000_fq_10_10_20_1600183241479.pcap"}.pdf}%
+}
+\caption{Throughput and delay of a flow controlled by our delay-based \gls{cca} on a link with a speed of 10\,Mbps, a delay of 10\,ms and a buffer size of 100 packets.}
+\label{fig:just_one_flow_udp}
+\end{figure}
+
+First, we want to demonstrate that delay-based \gls{cc} actually has a benefit over loss-based one. \autoref{fig:just_one_flow_tcp} shows that the loss-based \gls{cc} achieves a throughput of almost 10\,Mbps, which means full utilization and an \gls{rtt} that is generally higher than 100\,ms. On the other side, \autoref{fig:just_one_flow_udp} shows an example flow using our \gls{cca} and a slow start algorithm similar to the one used by the classic TCP \gls{cca} \textit{New Reno} \cite{allman_tcp_1999}. While the delay-based flow also achieves very high utilization, delay rarely exceeds 20\,ms, meaning that it is more than 5 times lower than the one of the loss-based \gls{cca} of \autoref{fig:just_one_flow_tcp}.
+
+\subsection{Comparing flows with different Congestion Controls and AQM mechanisms}
+In this scenario, one flow with our mechanism shares a bottleneck link with a flow using a loss-based congestion control. 
+
+\subsubsection{Drop tail buffer (no \gls{fq})}
+\autoref{fig:pfifo_tcp} and \autoref{fig:pfifo_udp} show the loss-based \gls{cca} Cubic compete against our delay-based one on a link with a drop tail queue and thus without \gls{fq}. In the scenario, the loss-based flow starts 5 seconds earlier and after 5 seconds, the delay-based flow joins. While the delay-based flow gains some share of the link during startup, it is pushed away by the loss-based flow later on and ``starves''. 
+
+\begin{figure}[h]
+\centering
+\subfloat[Throughput (receiving rate)]{%
+  \includegraphics[width=\columnwidth]{{"figures/plots/throughput_1_competing_flow_pfifo_vegas_tcp_port9010_pfifo_10_50_20_1600182743408.pcap"}.pdf}%
+}\\
+\subfloat[\gls{rtt}]{%
+  \includegraphics[width=\columnwidth]{{"figures/plots/rtt_1_competing_flow_pfifo_vegas_tcp_port9010_pfifo_10_50_20_1600182743408.pcap"}.pdf}%
+}
+\caption{Throughput and delay of a flow controlled by the loss-based \gls{cca} Cubic on a link with a speed of 50\,Mbps, a delay of 10\,ms and a buffer size of 100 packets. The bottleneck is controlled by drop tail (no \gls{fq}).}
+\label{fig:pfifo_tcp}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\subfloat[Throughput (receiving rate)]{%
+  \includegraphics[width=\columnwidth]{{"figures/plots/throughput_1_competing_flow_pfifo_vegas_udp_port9000_pfifo_10_50_20_1600182743408.pcap"}.pdf}%
+}\\
+\subfloat[\gls{rtt}]{%
+  \includegraphics[width=\columnwidth]{{"figures/plots/rtt_1_competing_flow_pfifo_vegas_udp_port9000_pfifo_10_50_20_1600182743408.pcap"}.pdf}%
+}
+\caption{Throughput and delay of a flow controlled by our delay-based \gls{cca} on a link with a speed of 50\,Mbps, a delay of 10\,ms and a buffer size of 100 packets. The bottleneck is controlled by drop tail (no \gls{fq}).}
+\label{fig:pfifo_udp}
+\end{figure}
+
+\subsubsection{\gls{fq}}
+
+\begin{figure}[h]
+\centering
+\subfloat[Throughput (receiving rate)]{%
+  \includegraphics[width=\columnwidth]{{"figures/plots/throughput_1_competing_flow_fq_tcp_port9010_fq_10_50_20_1600182657352.pcap"}.pdf}%
+}\\
+\subfloat[\gls{rtt}]{%
+  \includegraphics[width=\columnwidth]{{"figures/plots/rtt_1_competing_flow_fq_tcp_port9010_fq_10_50_20_1600182657352.pcap"}.pdf}%
+}
+\caption{Throughput and delay of a flow controlled by the loss-based \gls{cca} Cubic on a link with a speed of 50\,Mbps, a delay of 10\,ms and a buffer size of 100 packets. The bottleneck is controlled by \gls{fq}.}
+\label{fig:fq_tcp}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\subfloat[Throughput (receiving rate)]{%
+  \includegraphics[width=\columnwidth]{{"figures/plots/throughput_1_competing_flow_fq_udp_port9000_fq_10_50_20_1600182657352.pcap"}.pdf}%
+}\\
+\subfloat[\gls{rtt}]{%
+  \includegraphics[width=\columnwidth]{{"figures/plots/rtt_1_competing_flow_fq_udp_port9000_fq_10_50_20_1600182657352.pcap"}.pdf}%
+}
+\caption{Throughput and delay of a flow controlled by our delay-based \gls{cca} on a link with a speed of 50\,Mbps, a delay of 10\,ms and a buffer size of 100 packets. The bottleneck is controlled by \gls{fq}.}
+\label{fig:fq_udp}
+\end{figure}
+
+For a link with fair queuing, the following results show that throughput is identical for our flow (\autoref{fig:fq_udp}) and the Cubic flow (\autoref{fig:fq_tcp}), just that the Cubic flow's delay is more than two times higher than the loss-based one's. Thus, our mechanism is effective to detect if the bottleneck uses fair queuing and use a delay-based congestion control if it is the case and a loss-based one otherwise. 
+
+\section{Discussion}
+
+During the implementation of our algorithm we noticed peculiar behavior when not using \gls{fq}: During startup, we make flow 1 have half the sending rate of flow 2. We would expect the receiving rates to be the same: flow 1 achieving around half the rate of flow 2. However, we noticed that usually flow 1 would have a receiving rate of 0. After investigating the issue we noticed that the reason was pacing: PCC (and other \glspl{cca}) such as BBR send packets in regular intervals, for example every millisecond, because sending regularly keeps the queues shorter. This behavior is called pacing. However, when there are two flows where one flow's sending rate is a multiple of the other's, an interlocking effect occurs: flow 1 would always send each packet slightly after flow 2 sends a packet. Then, when the packets arrive at the bottleneck, flow 2's packet, which arrives a bit earlier, fills up the buffer and flow 1's packet is consequently dropped. As a solution, we do not send packets at regular intervals but always add a small random value: For example, if the sending interval were 1\,ms, we would send the packet randomly in the interval from 0.5 to 1.5\,ms. This solves the aforementioned problem. The insight we gained from this is that while pacing is generally good, it is actually harmful if several flows compete at a bottleneck without \gls{fq} and one flow's sending rate is a multiple of the other's.
+
+Finally, we think that our new flow startup method can help to increase the deployment of delay-based \gls{cc}. Especially for applications that are very delay-sensitive, such as video conferencing and cloud gaming, the adoption of delay-based \gls{cc} can result in a significant increase of \gls{qoe}. We demonstrated that our method works using a prototype implementation using PCC but we are also confident that a similar flow startup method can also be integrated with other \gls{cca} such as BBR \cite{cardwell_bbr:_2016}. 
+
+\bibliographystyle{splncs04}
 \bibliography{fq_detection}
 
 \end{document}
