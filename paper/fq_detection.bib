@@ -99,7 +99,7 @@
 	abstract = {Active queue management (AQM) techniques have evolved in the recent years, after defining the bufferbloat problem. In parallel novel congestion control (CC) algorithms have been developed to achieve better data transport performance, often assuming simple tail dropping buffers. On the other hand, AQM algorithms usually assume legacy CC (Cubic). Though all of the novel AQM and CC algorithms improve the performance under these assumptions, their co-existence has not or only partially been tested so far. Similarly, router buffer sizing was studied mainly in the 2000s, also assuming traditional CC and tail dropping buffers. In this paper we show that combining the different AQMs and CCs evolved in the past few years results in poor fairness, because assumptions used during development do not hold in this heterogeneous case. We also show that while a non-traditional AQM, using core-stateless resource sharing control, has the potential to harmonize conflicting CCs, it suffers from deployment issues. We argue that when dimensioning router buffers in networks where connections with different CCs coexist, the right choice of AQM is more important than the size of the buffer itself.},
 	booktitle = {Workshop on {Buffer} {Sizing}},
 	publisher = {ACM},
-	author = {Fejes, Ferenc and Gombos, Gerg{\H o} and Laki, S{\'a}ndor and N{\'a}das, Szilveszter},
+	author = {Fejes, Ferenc and Gombos, Gergő and Laki, Sándor and Nádas, Szilveszter},
 	year = {2019},
 	keywords = {AQM, Buffer Sizing, Congestion Control, Fairness},
 	file = {Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/LLM6NQBI/Fejes et al. - 2019 - Who will Save the Internet from the Congestion Con.pdf:application/pdf}
@@ -107,8 +107,8 @@
 
 @inproceedings{fejes_incompatibility_2020,
 	title = {On the {Incompatibility} of {Scalable} {Congestion} {Controls} over the {Internet}},
-	abstract = {In addition to classic ones, a new family of congestion controls regarded as {\textquotedblleft}scalable{\textquotedblright} has recently emerged. Scalable congestion control exploits ECN to provide much finer control as rate scales, enabling reactions proportional to the congestion level. Nowadays, different initiatives propose the use of Scalable congestion control over the public Internet, with the separation of Scalable and Classic flows. Similar to classic approaches, the evolution of Scalable congestion control has also begun as BBRv2 implemented a {\textquotedblleft}DCTCP-inspired{\textquotedblright} ECN mechanism. In this paper, we investigate the compatibility of two available Scalable congestion controls, Data Center TCP, and Google{\textquoteright}s recent proposal called BBRv2, and evaluate them with different ECN marking strategies. Our evaluation relies on numerous measurements carried out in our testbed with 1 to 10Gbps bottleneck capacities and heterogeneous round trip times. At the bottleneck, the ECN marking of two traditional AQMs (STEP and PI2) most commonly proposed for Scalable flows and a non-traditional core-stateless AQM (CSAQM) using in-network resource sharing control is examined. After showing compatibility issues, we conclude that as long as the end-to-end flows control resource sharing, it will be tough to create a new, evolved congestion control that is fair to legacy solutions, and its deployment does not harm the Internet.},
-	author = {Fejes, Mr Ferenc and Gombos, Mr Gergo and Laki, Mr S{\'a}ndor and N{\'a}das, Mr Szilveszter},
+	abstract = {In addition to classic ones, a new family of congestion controls regarded as “scalable” has recently emerged. Scalable congestion control exploits ECN to provide much ﬁner control as rate scales, enabling reactions proportional to the congestion level. Nowadays, different initiatives propose the use of Scalable congestion control over the public Internet, with the separation of Scalable and Classic ﬂows. Similar to classic approaches, the evolution of Scalable congestion control has also begun as BBRv2 implemented a “DCTCP-inspired” ECN mechanism. In this paper, we investigate the compatibility of two available Scalable congestion controls, Data Center TCP, and Google’s recent proposal called BBRv2, and evaluate them with different ECN marking strategies. Our evaluation relies on numerous measurements carried out in our testbed with 1 to 10Gbps bottleneck capacities and heterogeneous round trip times. At the bottleneck, the ECN marking of two traditional AQMs (STEP and PI2) most commonly proposed for Scalable ﬂows and a non-traditional core-stateless AQM (CSAQM) using in-network resource sharing control is examined. After showing compatibility issues, we conclude that as long as the end-to-end ﬂows control resource sharing, it will be tough to create a new, evolved congestion control that is fair to legacy solutions, and its deployment does not harm the Internet.},
+	author = {Fejes, Mr Ferenc and Gombos, Mr Gergo and Laki, Mr Sándor and Nádas, Mr Szilveszter},
 	year = {2020},
 	file = {Fejes et al. - On the Incompatibility of Scalable Congestion Cont.pdf:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/CA6LI2FV/Fejes et al. - On the Incompatibility of Scalable Congestion Cont.pdf:application/pdf}
 }
@@ -117,7 +117,7 @@
 	title = {An {Evaluation} of {QoE} in {Cloud} {Gaming} {Based} on {Subjective} {Tests}},
 	abstract = {Cloud Gaming is a new kind of service, which combines the successful concepts of Cloud Computing and Online Gaming. It provides the entire game experience to the users remotely from a data center. The player is no longer dependent on a specific type or quality of gaming hardware, but is able to use common devices. The end device only needs a broadband internet connection and the ability to display High Definition (HD) video. While this may reduce hardware costs for users and increase the revenue for developers by leaving out the retail chain, it also raises new challenges for service quality in terms of bandwidth and latency for the underlying network. In this paper we present the results of a subjective user study we conducted into the user-perceived quality of experience (QoE) in Cloud Gaming. We design a measurement environment, that emulates this new type of service, define tests for users to assess the QoE, derive Key Influence Factors (KFI) and influences of content and perception from our results.},
 	booktitle = {{IMIS}},
-	author = {Jarschel, Michael and Schlosser, Daniel and Scheuring, Sven and Ho{\ss}feld, Tobias},
+	author = {Jarschel, Michael and Schlosser, Daniel and Scheuring, Sven and Hoßfeld, Tobias},
 	month = jun,
 	year = {2011},
 	keywords = {Quality of service, Streaming media, Servers, Hardware, Delay, broadband Internet connection, cloud computing, cloud gaming, Cloud Gaming, computer games, data center, Games, gaming hardware, high definition video, key influence factors, online gaming, QoE, quality of experience, retail chain, service quality, Software, Survey},
@@ -278,4 +278,82 @@
 	author = {Allman, Mark and Paxson, Vern and Stevens, Wright and {others}},
 	year = {1999},
 	note = {Publisher: RFC 2581, april}
+}
+
+@misc{apple_about_2018,
+	title = {About {Wi}-{Fi} {Assist}},
+	url = {https://support.apple.com/en-us/HT205296},
+	abstract = {With iOS 9 and later, you can use Wi-Fi Assist to automatically switch to cellular when you have a poor Wi-Fi connection.},
+	language = {en},
+	urldate = {2020-09-25},
+	journal = {Apple Support},
+	author = {{Apple}},
+	year = {2018},
+	file = {Snapshot:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/AM4CFHD6/HT205296.html:text/html}
+}
+
+@misc{google_quiche_2020,
+	title = {quiche},
+	url = {https://quiche.googlesource.com/quiche},
+	urldate = {2020-09-25},
+	author = {{Google}},
+	year = {2020},
+	file = {quiche - Git at Google:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/C2PJFEHB/quiche.html:text/html}
+}
+
+@inproceedings{langley_quic_2017,
+	address = {Los Angeles CA USA},
+	title = {The {QUIC} {Transport} {Protocol}: {Design} and {Internet}-{Scale} {Deployment}},
+	isbn = {978-1-4503-4653-5},
+	shorttitle = {The {QUIC} {Transport} {Protocol}},
+	url = {https://dl.acm.org/doi/10.1145/3098822.3098842},
+	doi = {10.1145/3098822.3098842},
+	abstract = {We present our experience with QUIC, an encrypted, multiplexed, and low-latency transport protocol designed from the ground up to improve transport performance for HTTPS traffic and to enable rapid deployment and continued evolution of transport mechanisms. QUIC has been globally deployed at Google on thousands of servers and is used to serve traffic to a range of clients including a widely-used web browser (Chrome) and a popular mobile video streaming app (YouTube). We estimate that 7\% of Internet traffic is now QUIC. We describe our motivations for developing a new transport, the principles that guided our design, the Internet-scale process that we used to perform iterative experiments on QUIC, performance improvements seen by our various services, and our experience deploying QUIC globally. We also share lessons about transport design and the Internet ecosystem that we learned from our deployment.},
+	language = {en},
+	urldate = {2020-09-25},
+	booktitle = {Proceedings of the {Conference} of the {ACM} {Special} {Interest} {Group} on {Data} {Communication}},
+	publisher = {ACM},
+	author = {Langley, Adam and Riddoch, Alistair and Wilk, Alyssa and Vicente, Antonio and Krasic, Charles and Zhang, Dan and Yang, Fan and Kouranov, Fedor and Swett, Ian and Iyengar, Janardhan and Bailey, Jeff and Dorfman, Jeremy and Roskind, Jim and Kulik, Joanna and Westin, Patrik and Tenneti, Raman and Shade, Robbie and Hamilton, Ryan and Vasiliev, Victor and Chang, Wan-Teh and Shi, Zhongyi},
+	month = aug,
+	year = {2017},
+	pages = {183--196}
+}
+
+@inproceedings{ruth_first_2018,
+	address = {Cham},
+	series = {Lecture {Notes} in {Computer} {Science}},
+	title = {A {First} {Look} at {QUIC} in the {Wild}},
+	isbn = {978-3-319-76481-8},
+	abstract = {For the first time since the establishment of TCP and UDP, the Internet transport layer is subject to a major change by the introduction of QUIC. Initiated by Google in 2012, QUIC provides a reliable, connection-oriented low-latency and fully encrypted transport. In this paper, we provide the first broad assessment of QUIC usage in the wild. We monitor the entire IPv4 address space since August 2016 and about 46\% of the DNS namespace to detected QUIC-capable infrastructures. Our scans show that the number of QUIC-capable IPs has more than tripled since then to over 617.59 K. We find around 161 K domains hosted on QUIC-enabled infrastructure, but only 15 K of them present valid certificates over QUIC. Second, we analyze one year of traffic traces provided by MAWI, one day of a major European tier-1 ISP and from a large IXP to understand the dominance of QUIC in the Internet traffic mix. We find QUIC to account for 2.6\% to 9.1\% of the current Internet traffic, depending on the vantage point. This share is dominated by Google pushing up to 42.1\% of its traffic via QUIC.},
+	language = {en},
+	booktitle = {Passive and {Active} {Measurement}},
+	publisher = {Springer International Publishing},
+	author = {Rüth, Jan and Poese, Ingmar and Dietzel, Christoph and Hohlfeld, Oliver},
+	editor = {Beverly, Robert and Smaragdakis, Georgios and Feldmann, Anja},
+	year = {2018},
+	keywords = {Akamai, Client Hello (CHLO), Entire IPv4 Address Space, Internet Transport, Traffic Share},
+	pages = {255--268}
+}
+
+@inproceedings{mittal_recursively_2014,
+	address = {USA},
+	series = {{NSDI}'14},
+	title = {Recursively cautious congestion control},
+	isbn = {978-1-931971-09-6},
+	abstract = {TCP's congestion control is deliberately cautious, avoiding network overloads by starting with a small initial window and then iteratively ramping up. As a result, it often takes flows several round-trip times to fully utilize the available bandwidth. In this paper we propose RC3, a technique to quickly take advantage of available capacity from the very first RTT. RC3 uses several levels of lower priority service and a modified TCP behavior to achieve near-optimal throughputs while preserving TCP-friendliness and fairness. We implement RC3 in the Linux kernel and in NS-3. In common wide-area scenarios, RC3 results in over 40\% reduction in average flow completion times, with strongest improvements - more than 70\% reduction in flow completion time - seen in medium to large sized (100KB - 3MB) flows.},
+	urldate = {2020-09-25},
+	booktitle = {Proceedings of the 11th {USENIX} {Conference} on {Networked} {Systems} {Design} and {Implementation}},
+	publisher = {USENIX Association},
+	author = {Mittal, Radhika and Sherry, Justine and Ratnasamy, Sylvia and Shenker, Scott},
+	month = apr,
+	year = {2014},
+	pages = {373--385}
+}
+
+@misc{apple_improving_2020,
+	title = {Improving {Network} {Reliability} {Using} {Multipath} {TCP}},
+	url = {https://developer.apple.com/documentation/foundation/urlsessionconfiguration/improving_network_reliability_using_multipath_tcp},
+	urldate = {2020-09-25},
+	author = {{Apple}},
+	year = {2020}
 }

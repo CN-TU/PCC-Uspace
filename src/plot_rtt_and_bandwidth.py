@@ -17,6 +17,7 @@ if pcap_file.startswith("pcaps/"):
 	pcap_file = pcap_file[len("pcaps/"):]
 
 is_secondary_flow = "port9010" in pcap_file
+just_one_flow = "just_one_flow" in pcap_file
 
 receiver_pcap = 'receiver_'+('_'.join(pcap_file.split('_')[1:]))
 
@@ -90,13 +91,13 @@ bytes_results = [(float(item[0][0]), float(item[0][1]), float(item[1])) for item
 # divided = [(first[0], first[1], first[2]/second[2]) for first, second in zip(bytes_results, packets_results)]
 # print("divided", divided)
 
-with_correct_time = [((item[0] + item[1])/2 - (5 if is_secondary_flow else 0), item[2]/1000000*8) for item in bytes_results]
+with_correct_time = [((item[0] + item[1])/2 - (5 if is_secondary_flow and not just_one_flow else 0), item[2]/1000000*8) for item in bytes_results]
 os.makedirs("tex/plots", exist_ok=True)
 
 plt.figure(figsize=(5,2))
 plt.xlabel("Time [s]")
 plt.ylabel(f"Throughput [Mbit/s]")
-plt.plot(*zip(*with_correct_time))
+plt.plot(*zip(*[(a, b) for a, b in with_correct_time if a <= 20]))
 plt.tight_layout()
 
 plt.ylim(bottom=0)
@@ -113,8 +114,8 @@ plt.xlabel("Time [s]")
 plt.ylabel(f"RTT [ms]")
 # plt.plot(*zip(*rtt_results))
 
-ack_timestamps = [ts - (5 if is_secondary_flow else 0) for ts in ack_timestamps]
-plt.plot(ack_timestamps, rtts)
+ack_timestamps = [ts - (5 if is_secondary_flow and not just_one_flow else 0) for ts in ack_timestamps]
+plt.plot(*zip(*[(a, b) for a, b in zip(ack_timestamps, rtts) if a <= 20]))
 # print("rtt_results", *zip(*rtt_results))
 # plt.scatter(retransmissions_results, [0]*len(retransmissions_results), marker=".", linestyle="None", color="r", s=2, edgecolors="none")
 
