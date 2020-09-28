@@ -30,22 +30,11 @@ except KeyError:
 	pass
 
 import subprocess
-# import matplotlib
-# matplotlib.use("Agg")
-# import matplotlib.pyplot as plt
 import virtnet
 import statistics
 import argparse
 
-# import numpy as np
-# from scipy.stats import norm
 
-
-# DELAY = 10000
-# SIGMA = 2000
-# SAMPLES = 1000
-# X = 10
-# NUMPING = 1000
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--bytes_to_capture', type=int, default=100)
@@ -205,6 +194,7 @@ def run(vnet, prefix=""):
 				print("client out", out.decode("utf-8"))
 			if err:
 				print("client err", err.decode("utf-8"))
+			client_out = out
 			if opt.competing_flow:
 				client_popen_iperf.terminate()
 				out, err = client_popen_iperf.stdout.read(), client_popen_iperf.stderr.read()
@@ -212,8 +202,6 @@ def run(vnet, prefix=""):
 					print("client iperf out", out.decode("utf-8"))
 				if err:
 					print("client iperf err", err.decode("utf-8"))
-
-			client_out = out
 		else:
 			client_out = b""
 
@@ -260,7 +248,7 @@ if opt.run_scenario == "":
 elif opt.run_scenario == "accuracy":
 	import sklearn.metrics
 	results_dict = {}
-	for bw_index, bw in enumerate(np.linspace(1,50,opt.how_many_values_per_parameter)):
+	for bw_index, bw in enumerate(np.linspace(5,50,opt.how_many_values_per_parameter)):
 		for delay_index, delay in enumerate(np.linspace(10,100,opt.how_many_values_per_parameter)):
 			for buffer_index, buffer in enumerate(np.linspace(1,100,opt.how_many_values_per_parameter)):
 				for fq_index, fq in enumerate([False, True]):
@@ -272,8 +260,10 @@ elif opt.run_scenario == "accuracy":
 
 					with virtnet.Manager() as context:
 						client_output = run(context)
+					assert client_output != ""
 					contained_vegas = "Starting Vegas" in client_output
 					contained_pcc = "Starting PCC Classic" in client_output
+					# print("client_output", client_output)
 
 					results_dict[(bw, delay, buffer, fq)] = (contained_vegas, contained_pcc)
 

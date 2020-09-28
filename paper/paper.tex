@@ -137,9 +137,9 @@ Basically, this metric indicates if flow 2, which has a higher sending rate, als
 \item Since the presence or absence of \gls{fq} is now known the appropriate \gls{cca} can be launched. 
 \end{enumerate}
 
-Figure~\ref{fig:throughput}, \ref{fig:goodput_no_fq} and \ref{fig:goodput_fq} schematically illustrate this mechanism. We assume a sender being connected to a receiver, with a bottleneck link between them. On this bottleneck link, the queue is either managed by \gls{fq} or by a drop tail buffer (no \gls{fq}). \autoref{fig:throughput} shows how the sending rate (observed before the bottleneck link) is doubled after each \gls{rtt}. Furthermore, it shows that flow 2 has double the sending rate of flow 1. %\noteMax{Figures take up too much space. Is it better to put them next to each other? The actual problem is the nonsensical Springer format.}. 
+Figure~\ref{fig:throughput}, \ref{fig:goodput_no_fq} and \ref{fig:goodput_fq} schematically illustrate this mechanism. We assume a sender being connected to a receiver, with a bottleneck link between them. On this bottleneck link, the queue is either managed by \gls{fq} or by a shared queue (no \gls{fq}). \autoref{fig:throughput} shows how the sending rate (observed before the bottleneck link) is doubled after each \gls{rtt}. Furthermore, it shows that flow 2 has double the sending rate of flow 1. %\noteMax{Figures take up too much space. Is it better to put them next to each other? The actual problem is the nonsensical Springer format.}. 
 
-Figure~\ref{fig:goodput_no_fq} shows the receiving rate at the receiver after the bottleneck link, if this bottleneck link has a drop tail buffer without \gls{fq}. In the third \gls{rtt} the sending rate exceeds the link speed of the bottleneck and thus the receiving rate is smaller than the sending rate. Because no \gls{fq} is employed, flow 2 manages to have a receiving rate two times the one of flow 1. 
+Figure~\ref{fig:goodput_no_fq} shows the receiving rate at the receiver after the bottleneck link, if this bottleneck link has a a shared queue without \gls{fq}. In the third \gls{rtt} the sending rate exceeds the link speed of the bottleneck and thus the receiving rate is smaller than the sending rate. Because no \gls{fq} is employed, flow 2 manages to have a receiving rate two times the one of flow 1. 
 
 Figure~\ref{fig:goodput_fq}, on the other side, shows the receiving rate of the two flows after the bottleneck link in case \gls{fq} is deployed. In the third \gls{rtt}, flow 1 and flow 2 achieve the same receiving rate because of the \gls{fq}, which makes sure that each flow only gets its fair share. 
 
@@ -167,11 +167,13 @@ Our approach of detecting \gls{fq} relies on using two concurrent flows between 
 
 \section{Results}
 
-For the evaluation we use the network emulation library \texttt{py-virtnet}\footnote{\url{https://pypi.org/project/py-virtnet/}}.
+For the evaluation we use the network emulation library \texttt{py-virtnet}\footnote{\url{https://pypi.org/project/py-virtnet/}}. For the experiments with \gls{fq} we use the \texttt{fq} module for Linux, for the experiments with a shared queue we use \texttt{pfifo}. 
 
 \subsection{Accuracy of the \gls{fq} detection mechanism}
 
-To evaluate if our proposed mechanism correctly recognizes, we perform experiments using a wide range of network configurations: We vary bandwidth from 1 to 50\,Mbps, delay from 10 to 100\,ms and the buffer size from 1 to 100 packets, using a grid of these parameters. For each parameter, we take 5 values. Thus, we run experiments with 125 different configurations. We run each configuration once with \gls{fq} and once without. Results show that for experiments without \gls{fq} (using drop tail), in over 99\% of cases, the absence of \gls{fq} was correctly detected and in less than 1\% of cases, our algorithm detected \gls{fq} even though there was no \gls{fq}. For experiments, during which \gls{fq} was actually deployed on the bottleneck link, this was correctly detected in 97\% of cases and wrongly in 3\% of the time. The overall accuracy is thus 98\%, which we consider sufficient. 
+To evaluate if our proposed mechanism correctly recognizes, we perform experiments using a wide range of network configurations: We vary bandwidth from 5 to 50\,Mbps, delay from 10 to 100\,ms and the buffer size from 1 to 100 packets, using a grid of these parameters. For each parameter, we take 5 values. Thus, we run experiments with 125 different configurations. We run each configuration once with \gls{fq} and once without. Results show that for experiments without \gls{fq} (using a shared queue), in over 99\% of cases, the absence of \gls{fq} was correctly detected and in less than 1\% of cases, our algorithm detected \gls{fq} even though there was no \gls{fq}. For experiments, during which \gls{fq} was actually deployed on the bottleneck link, this was correctly detected in 97\% of cases and wrongly in 3\% of the time. The overall accuracy is thus 98\%, which we consider sufficient. 
+
+To verify the behavior of our algorithm under the presence of cross traffic, we repeated the above experiments but with one bulk traffic flow using Cubic running at the same time, which we start 5 seconds before so that it can gain sufficient bandwidth. Also under these circumstances we achieve 98\% detection accuracy using our algorithm. 
 
 \subsection{Delay- vs.~loss-based \gls{cc}}
 
@@ -206,8 +208,8 @@ First, we want to demonstrate that delay-based \gls{cc} actually has a benefit o
 \subsection{Comparing flows with different Congestion Controls and AQM mechanisms}
 In this scenario, one flow with our mechanism shares a bottleneck link with a flow using a loss-based congestion control. 
 
-\subsubsection{Drop tail buffer (no \gls{fq})}
-\autoref{fig:pfifo_tcp} and \autoref{fig:pfifo_udp} show the loss-based \gls{cca} Cubic compete against our delay-based one on a link with a drop tail queue and thus without \gls{fq}. In the scenario, the loss-based flow starts 5 seconds earlier and after 5 seconds, the delay-based flow joins. While the delay-based flow gains some share of the link during startup, it is pushed away by the loss-based flow later on and ``starves''. 
+\subsubsection{No \gls{fq}}
+\autoref{fig:pfifo_tcp} and \autoref{fig:pfifo_udp} show the loss-based \gls{cca} Cubic compete against our delay-based one on a link without \gls{fq}. In the scenario, the loss-based flow starts 5 seconds earlier and after 5 seconds, the delay-based flow joins. While the delay-based flow gains some share of the link during startup, it is pushed away by the loss-based flow later on and ``starves''. 
 
 \begin{figure}[h]
 \centering
@@ -217,7 +219,7 @@ In this scenario, one flow with our mechanism shares a bottleneck link with a fl
 \subfloat[\gls{rtt}]{%
   \includegraphics[width=\columnwidth]{{"figures/plots/rtt_1_competing_flow_pfifo_vegas_tcp_port9010_pfifo_10_50_20_1600182743408.pcap"}.pdf}%
 }
-\caption{Throughput and delay of a flow controlled by the loss-based \gls{cca} Cubic on a link with a speed of 50\,Mbps, a delay of 10\,ms and a buffer size of 100 packets. The bottleneck is controlled by drop tail (no \gls{fq}).}
+\caption{Throughput and delay of a flow controlled by the loss-based \gls{cca} Cubic on a link with a speed of 50\,Mbps, a delay of 10\,ms and a buffer size of 100 packets. The bottleneck is controlled by a shared queue (no \gls{fq}).}
 \label{fig:pfifo_tcp}
 \end{figure}
 
@@ -229,7 +231,7 @@ In this scenario, one flow with our mechanism shares a bottleneck link with a fl
 \subfloat[\gls{rtt}]{%
   \includegraphics[width=\columnwidth]{{"figures/plots/rtt_1_competing_flow_pfifo_vegas_udp_port9000_pfifo_10_50_20_1600182743408.pcap"}.pdf}%
 }
-\caption{Throughput and delay of a flow controlled by our delay-based \gls{cca} on a link with a speed of 50\,Mbps, a delay of 10\,ms and a buffer size of 100 packets. The bottleneck is controlled by drop tail (no \gls{fq}).}
+\caption{Throughput and delay of a flow controlled by our delay-based \gls{cca} on a link with a speed of 50\,Mbps, a delay of 10\,ms and a buffer size of 100 packets. The bottleneck is controlled by a shared queue (no \gls{fq}).}
 \label{fig:pfifo_udp}
 \end{figure}
 
