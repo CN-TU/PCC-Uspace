@@ -10,6 +10,7 @@ import time
 import math
 import signal
 import numpy as np
+import fnmatch
 sys.path.insert(0, os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 
 try:
@@ -240,7 +241,7 @@ def run(vnet, prefix=""):
 
 			subprocess.check_output("chmod -R o+rw pcaps".split())
 
-		return client_out.decode("utf-8")
+		return client_out.decode("utf-8"), start_time
 
 if opt.run_scenario == "":
 	with virtnet.Manager() as context:
@@ -259,11 +260,25 @@ elif opt.run_scenario == "accuracy":
 					opt.time = 10
 
 					with virtnet.Manager() as context:
-						client_output = run(context)
+						client_output, timestamp = run(context, "accuracy")
 					assert client_output != ""
 					contained_vegas = "Starting Vegas" in client_output
 					contained_pcc = "Starting PCC Classic" in client_output
-					# print("client_output", client_output)
+
+					if opt.store_pcaps:
+						files = []
+						for file in os.listdir('pcaps'):
+							if fnmatch.fnmatch(file, f'sender_*{timestamp}.pcap'):
+								files.append(file)
+						assert len(files) == 1, len(files)
+					command = f"python3 ./plot_rtt_and_bandwidth.py {files[0]} no_plotting"
+					print("command", command)
+					output = subprocess.check_output(command.split())
+					output_lines = output.decode("utf-8").split("\n")[:2]
+					throughput = float(output_lines[0].split(" ")[-1])
+					rtt = float(output_lines[1].split(" ")[-1])
+
+					print("throughput", throughput, "rtt", rtt)
 
 					results_dict[(bw, delay, buffer, fq)] = (contained_vegas, contained_pcc)
 
@@ -308,7 +323,7 @@ elif opt.run_scenario == "competing_flow":
 	opt.qdisc = "fq"
 	opt.two_iperfs = False
 	with virtnet.Manager() as context:
-		client_output = run(context, "competing_flow_fq")
+		client_output, timestamp = run(context, "competing_flow_fq")
 
 	try:
 		del os.environ["START_VEGAS"]
@@ -326,7 +341,7 @@ elif opt.run_scenario == "competing_flow":
 	print("Starting pfifo experiment")
 	opt.qdisc = "pfifo"
 	with virtnet.Manager() as context:
-		client_output = run(context, "competing_flow_pfifo")
+		client_output, timestamp = run(context, "competing_flow_pfifo")
 
 	try:
 		del os.environ["START_VEGAS"]
@@ -346,7 +361,7 @@ elif opt.run_scenario == "competing_flow":
 	print("Starting fq experiment with Cubic")
 	opt.qdisc = "fq"
 	with virtnet.Manager() as context:
-		client_output = run(context, "competing_flow_fq_pcc")
+		client_output, timestamp = run(context, "competing_flow_fq_pcc")
 
 	try:
 		del os.environ["START_VEGAS"]
@@ -365,7 +380,7 @@ elif opt.run_scenario == "competing_flow":
 	opt.qdisc = "pfifo"
 	print("Starting pfifo experiment with VEGAS")
 	with virtnet.Manager() as context:
-		client_output = run(context, "competing_flow_pfifo_vegas")
+		client_output, timestamp = run(context, "competing_flow_pfifo_vegas")
 
 elif opt.run_scenario == "just_one_flow":
 
@@ -380,11 +395,11 @@ elif opt.run_scenario == "just_one_flow":
 	print("ours experiment")
 	opt.qdisc = "fq"
 	with virtnet.Manager() as context:
-		client_output = run(context, "just_one_flow_vegas")
+		client_output, timestamp = run(context, "just_one_flow_vegas")
 
 	print("cubic experiment")
 	opt.qdisc = "fq"
 	opt.only_iperf = True
 	opt.competing_flow = True
 	with virtnet.Manager() as context:
-		client_output = run(context, "just_one_flow_cubic")
+		client_output, timestamp = run(context, "just_one_flow_cubic")

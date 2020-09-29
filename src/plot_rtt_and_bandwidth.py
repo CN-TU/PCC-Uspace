@@ -9,6 +9,7 @@ import pandas as pd
 import fnmatch
 plt.rcParams["font.family"] = "serif"
 plt.rcParams['pdf.fonttype'] = 42
+plt.rcParams["font.size"] = 8
 
 interval = 1
 pcap_file = sys.argv[1]
@@ -25,12 +26,10 @@ receiver_pcap = 'receiver_'+('_'.join(pcap_file.split('_')[1:]))
 new_rtt_command = f"./wintracker pcaps/{pcap_file}"
 
 # retransmissions_command = f"tshark -Y ip.src==192.168.0.1&&tcp.analysis.retransmission -r pcaps/{pcap_file} -Tfields -e frame.time_relative"
-
 # packets_command = f"tshark -Y ip.src==192.168.0.1 -r pcaps/{receiver_pcap} -q -z io,stat,{interval},ip.src==192.168.0.1"
 
 bytes_command = f"tshark -r pcaps/{receiver_pcap} -q -z io,stat,{interval},SUM(ip.len)ip.len&&ip.src==192.168.0.1"
-
-# bytes_command_total = f"tshark -r pcaps/{receiver_pcap} -q -z io,stat,0,SUM(ip.len)ip.len&&ip.src==192.168.0.1"
+bytes_command_total = f"tshark -r pcaps/{receiver_pcap} -q -z io,stat,0,SUM(ip.len)ip.len&&ip.src==192.168.0.1"
 
 # rtt_out = subprocess.run(rtt_command.split(), check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 if "tcp" in pcap_file:
@@ -46,7 +45,7 @@ else:
 		if fnmatch.fnmatch(f, f'*{timestamp}.txt'):
 			rtt_text_file = f
 			break
-	print("rtt_text_file", rtt_text_file)
+	# print("rtt_text_file", rtt_text_file)
 	df = pd.read_csv(f"pcaps/{rtt_text_file}")
 
 	ack_timestamps = df['timestamp'].tolist()
@@ -60,7 +59,6 @@ else:
 # # print("rtt_out", rtt_out)
 # rtt_results = [(float(item[0]), 1000*float(item[1])) for item in rtt_out if item[1] != ""]
 # print("average rtt", statistics.mean(list(zip(*rtt_results))[1]))
-print("average rtt", statistics.mean(rtts))
 # print("rtt_results", rtt_results[:100])
 
 # retransmissions_out = subprocess.run(retransmissions_command.split(), check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -68,8 +66,15 @@ print("average rtt", statistics.mean(rtts))
 # retransmissions_results = [float(item) for item in retransmissions_out]
 # print("total retransmissions", len(retransmissions_results))
 
-# bytes_total_out = subprocess.run(bytes_command_total.split(), check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-# bytes_total_out = bytes_total_out.stdout.decode("utf-8")
+bytes_total_out = subprocess.run(bytes_command_total.split(), check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+bytes_total_out = bytes_total_out.stdout.decode("utf-8")
+good_line = [line for line in bytes_total_out.split("\n") if "<>" in line][0]
+# print(good_line.split("|"))
+time_part, sum_part = good_line.split("|")[1:3]
+# print(time_part.split("<>"))
+start_time, end_time = [float(item.strip()) for item in time_part.split("<>")]
+sum_part = int(sum_part.strip())/1000000*8
+# print("start_time", start_time, "end_time", end_time, "sum_part", sum_part)
 # print("bytes_total_out", bytes_total_out)
 
 # packets_out = subprocess.run(packets_command.split(), check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -80,7 +85,9 @@ print("average rtt", statistics.mean(rtts))
 # # print("packets_results", packets_results)
 
 bytes_out = subprocess.run(bytes_command.split(), check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-bytes_out = [item for item in bytes_out.stdout.decode("utf-8").split("\n")[12:-3] if item!=""]
+# print("bytes_out", bytes_out.stdout.decode("utf-8"))
+bytes_out = [item for item in bytes_out.stdout.decode("utf-8").split("\n") if item!="" and "<>" in item and not "Dur" in item]
+# print("bytes_out", bytes_out)
 bytes_out = [[subitem for subitem in item.split("|") if subitem!=''] for item in bytes_out]
 bytes_out = [[item[0].split("<>"), *item[1:]] for item in bytes_out]
 bytes_results = [(float(item[0][0]), float(item[0][1]), float(item[1])) for item in bytes_out]
@@ -91,10 +98,16 @@ bytes_results = [(float(item[0][0]), float(item[0][1]), float(item[1])) for item
 # divided = [(first[0], first[1], first[2]/second[2]) for first, second in zip(bytes_results, packets_results)]
 # print("divided", divided)
 
+print("avg_rtt", statistics.mean(rtts))
+print("throughput", sum_part/(end_time-start_time))
+
+if len(sys.argv) > 2 and sys.argv[2] == "no_plotting":
+	quit()
+
 with_correct_time = [((item[0] + item[1])/2 - (5 if is_secondary_flow and not just_one_flow else 0), item[2]/1000000*8) for item in bytes_results]
 os.makedirs("tex/plots", exist_ok=True)
 
-plt.figure(figsize=(5,2))
+plt.figure(figsize=(2.5,2))
 plt.xlabel("Time [s]")
 plt.ylabel(f"Throughput [Mbit/s]")
 plt.plot(*zip(*[(a, b) for a, b in with_correct_time if a <= 20]))
@@ -109,7 +122,7 @@ plt.close()
 
 
 
-plt.figure(figsize=(5,2))
+plt.figure(figsize=(2.5,2))
 plt.xlabel("Time [s]")
 plt.ylabel(f"RTT [ms]")
 # plt.plot(*zip(*rtt_results))
