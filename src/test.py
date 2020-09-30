@@ -265,38 +265,70 @@ elif opt.run_scenario == "accuracy":
 					contained_vegas = "Starting Vegas" in client_output
 					contained_pcc = "Starting PCC Classic" in client_output
 
-					if opt.store_pcaps:
-						files = []
-						for file in os.listdir('pcaps'):
-							if fnmatch.fnmatch(file, f'sender_*{timestamp}.pcap'):
-								files.append(file)
-						assert len(files) == 1, len(files)
-					command = f"python3 ./plot_rtt_and_bandwidth.py {files[0]} no_plotting"
-					print("command", command)
-					output = subprocess.check_output(command.split())
-					output_lines = output.decode("utf-8").split("\n")[:2]
-					throughput = float(output_lines[0].split(" ")[-1])
-					rtt = float(output_lines[1].split(" ")[-1])
-
-					print("throughput", throughput, "rtt", rtt)
-
 					results_dict[(bw, delay, buffer, fq)] = (contained_vegas, contained_pcc)
 
-	invalid = 0
+	invalids = []
+	false_predictions = []
 	predictions = []
 	for (bw, delay, buffer, fq), (is_vegas, is_pcc) in results_dict.items():
 		is_invalid = (not is_vegas and not is_pcc)
-		invalid += is_invalid
+		if is_invalid:
+			invalids.append(((bw, delay, buffer, fq), (is_vegas, is_pcc)))
 		if not is_invalid:
 			predictions.append((fq, is_vegas))
+			if fq != is_vegas:
+				false_predictions.append(((bw, delay, buffer, fq), is_vegas))
 
-	print("invalid", invalid, "total", len(results_dict))#, "results", results_dict)
+	print("invalids", len(invalids), "total", len(results_dict))
+	print("invalids", invalids)
 	confusion_matrix_input = list(zip(*predictions))
-	# print("confusion_matrix_input", confusion_matrix_input)
 	accuracy_score = sklearn.metrics.accuracy_score(*confusion_matrix_input)
 	print("accuracy_score", accuracy_score)
 	confusion_matrix = sklearn.metrics.confusion_matrix(*confusion_matrix_input)
 	print("confusion_matrix", confusion_matrix)
+	print("false_predictions", false_predictions)
+
+elif opt.run_scenario == "evaluation":
+	results_dict = {}
+	opt.store_pcaps = True
+	for bw_index, bw in enumerate(np.linspace(5,50,opt.how_many_values_per_parameter)):
+		for delay_index, delay in enumerate(np.linspace(10,100,opt.how_many_values_per_parameter)):
+			for buffer_index, buffer in enumerate(np.linspace(1,100,opt.how_many_values_per_parameter)):
+				fq = True
+				opt.rate = int(round(bw))
+				opt.delay = int(round(delay))
+				opt.buffer_size = int(round(buffer))
+				opt.qdisc = "fq" if fq else "pfifo"
+				opt.time = 10
+
+				with virtnet.Manager() as context:
+					client_output, timestamp = run(context, "accuracy")
+				contained_vegas = "Starting Vegas" in client_output
+
+				assert opt.store_pcaps
+
+				files = []
+				for file in os.listdir('pcaps'):
+					if fnmatch.fnmatch(file, f'sender_*{timestamp}.pcap'):
+						files.append(file)
+				assert len(files) == 1, len(files)
+				command = f"python3 ./plot_rtt_and_bandwidth.py {files[0]} no_plotting"
+				# print("command", command)
+				output = subprocess.check_output(command.split())
+				# print("parsing output", output)
+				output_lines = output.decode("utf-8").split("\n")[:2]
+				throughput = float(output_lines[0].split(" ")[-1])
+				rtt = float(output_lines[1].split(" ")[-1])
+
+				print("throughput", throughput, "rtt", rtt)
+				results_dict[(bw, delay, buffer)] = (throughput, rtt, contained_vegas)
+
+	all_throughputs, all_delays, contained_vegas = zip(*results_dict.values())
+
+	print("total len", len(all_throughputs))
+	print("mean throughput", statistics.mean(all_throughputs), "stdev throughput", statistics.stdev(all_throughputs))
+	print("mean rtt", statistics.mean(all_delays), "stdev rtt", statistics.stdev(all_delays))
+	print("detection accuracy", sum(contained_vegas)/len(contained_vegas))
 
 elif opt.run_scenario == "competing_flow":
 	opt.competing_flow = True

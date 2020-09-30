@@ -98,8 +98,8 @@ bytes_results = [(float(item[0][0]), float(item[0][1]), float(item[1])) for item
 # divided = [(first[0], first[1], first[2]/second[2]) for first, second in zip(bytes_results, packets_results)]
 # print("divided", divided)
 
-print("avg_rtt", statistics.mean(rtts))
 print("throughput", sum_part/(end_time-start_time))
+print("avg_rtt", statistics.mean(rtts))
 
 if len(sys.argv) > 2 and sys.argv[2] == "no_plotting":
 	quit()
