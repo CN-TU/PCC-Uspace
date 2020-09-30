@@ -43,16 +43,22 @@
 % If the paper title is too long for the running head, you can set
 % an abbreviated paper title here
 %
-\author{Maximilian Bachl\inst{1}\orcidID{0000-0001-9482-7428} \and
-Joachim Fabini\inst{2,3}\orcidID{0000-0002-8285-1591} \and
-Tanja Zseby\inst{3}\orcidID{0000-0002-5391-467X}}
+\author{Anonymous authors}
 %
-\authorrunning{M. Bachl et al.}
+\authorrunning{Anonymous authors}
 % First names are abbreviated in the running head.
 % If there are more than two authors, 'et al.' is used.
 %
-\institute{TU Wien, Vienna, Austria; 
-\email{firstname.lastname@tuwien.ac.at}}
+%\author{Maximilian Bachl\inst{1}\orcidID{0000-0001-9482-7428} \and
+%Joachim Fabini\inst{2,3}\orcidID{0000-0002-8285-1591} \and
+%Tanja Zseby\inst{3}\orcidID{0000-0002-5391-467X}}
+%%
+%\authorrunning{M. Bachl et al.}
+%% First names are abbreviated in the running head.
+%% If there are more than two authors, 'et al.' is used.
+%%
+%\institute{TU Wien, Vienna, Austria; 
+%\email{firstname.lastname@tuwien.ac.at}}
 %
 \maketitle              % typeset the header of the contribution
 %
@@ -86,9 +92,9 @@ Since our work involves using active measurements for the startup phase of \gls{
 \subsubsection{\gls{cc} using Active Measurements}
 Several approaches have been recently proposed which aim to incorporate active measurements into \glspl{cca}. \cite{dong_pcc_2015,dong_pcc_2018} introduced the \gls{cca} \textit{PCC}, which uses active measurements to find the sending rate which optimizes a given reward function. \cite{cardwell_bbr:_2016} introduce the \textit{BBR} \gls{cca}, which uses active measurement to create a model of the network connection. This model is then used to determine the optimal sending rate. \cite{bachl_rax_2019} use Reinforcement Learning to learn policies \gls{cc}. This is done by performing active measurements by varying the congestion window to evaluate which value gives the highest throughput and lowest packet loss. 
 
-\subsubsection{Flow startup techniques} Besides the classical TCP slow start algorithm \cite{stevens_tcp_1997} also some other proposals were made such as Quick Start \cite{jain_quick-start_2019}, which aims to speed up flow start by routers telling the end point, which rate they deem appropriate. \cite{jarvinen_congestion_2019} investigate the impact of \gls{aqm} and \gls{cc} during flow startup. They inspect a variety of different \gls{aqm} algorithms and also investigate \gls{fq}. 
+\subsubsection{Flow startup techniques} Besides the classical TCP slow start algorithm \cite{stevens_tcp_1997} also some other proposals were made such as Quick Start \cite{jain_quick-start_2019}, which aims to speed up flow start by routers telling the end point, which rate they deem appropriate. \cite{jarvinen_congestion_2019} investigate the impact of \gls{aqm} and \gls{cc} during flow startup. They inspect a variety of different \gls{aqm} algorithms and also investigate \gls{fq}. \cite{kuhlewind_chirping_2010} propose ``chirping'' for flow startup to estimate the available bandwidth. This works by sending packets with different gaps between them to verify what the actual link speed is. 
 
-\subsubsection{Detecting \gls{aqm} mechanisms} We know of only one work \cite{kargar_bideh_tada_2016} which proposes a method to detect and distinguish certain popular \gls{aqm} mechanisms. However, unlike our work, it doesn't consider \gls{fq}. 
+%\subsubsection{Detecting \gls{aqm} mechanisms} We know of only one work \cite{kargar_bideh_tada_2016} which proposes a method to detect and distinguish certain popular \gls{aqm} mechanisms. However, unlike our work, it doesn't consider \gls{fq}. 
 
 \section{Concept}
 \label{sec:concept}
