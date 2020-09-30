@@ -79,7 +79,16 @@ We show that this solution reliably determines the presence of fair queuing and 
 
 To make our work reproducible and to encourage further research, we make the code, the results and the figures publicly available\footnote{\url{https://github.com/CN-TU/PCC-Uspace}}. 
 
-%\section{Related work}
+\section{Related work}
+
+Since our work involves using active measurements for the startup phase of \gls{cc} as well as proposing a new measurement technique that detects \gls{aqm}, we will present related work related to these two fields. 
+
+\subsubsection{\gls{cc} using Active Measurements}
+Several approaches have been recently proposed which aim to incorporate active measurements into \glspl{cca}. \cite{dong_pcc_2015,dong_pcc_2018} introduced the \gls{cca} \textit{PCC}, which uses active measurements to find the sending rate which optimizes a given reward function. \cite{cardwell_bbr:_2016} introduce the \textit{BBR} \gls{cca}, which uses active measurement to create a model of the network connection. This model is then used to determine the optimal sending rate. \cite{bachl_rax_2019} use Reinforcement Learning to learn policies \gls{cc}. This is done by performing active measurements by varying the congestion window to evaluate which value gives the highest throughput and lowest packet loss. 
+
+\subsubsection{Flow startup techniques} Besides the classical TCP slow start algorithm \cite{stevens_tcp_1997} also some other proposals were made such as Quick Start \cite{jain_quick-start_2019}, which aims to speed up flow start by routers telling the end point, which rate they deem appropriate. \cite{jarvinen_congestion_2019} investigate the impact of \gls{aqm} and \gls{cc} during flow startup. They inspect a variety of different \gls{aqm} algorithms and also investigate \gls{fq}. 
+
+\subsubsection{Detecting \gls{aqm} mechanisms} We know of only one work \cite{kargar_bideh_tada_2016} which proposes a method to detect and distinguish certain popular \gls{aqm} mechanisms. However, unlike our work, it doesn't consider \gls{fq}. 
 
 \section{Concept}
 \label{sec:concept}
