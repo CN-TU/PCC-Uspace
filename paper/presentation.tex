@@ -1,0 +1,265 @@
+
+%
+% Beispieldokument für TU beamer theme
+%
+% v1.0: 12.10.2014
+% 
+\documentclass[xcolor={dvipsnames}]{beamer}
+\usetheme{TU}
+
+\setbeamertemplate{caption}[numbered]
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{subfig}
+% Macro to make entire row bold from https://tex.stackexchange.com/questions/309833/format-whole-row-of-table-as-bold
+\newcommand\setrow[1]{\gdef\rowmac{#1}#1\ignorespaces}
+\newcommand\clearrow{\global\let\rowmac\relax}
+\clearrow
+
+\title{Detecting Fair Queuing to Enable Better Congestion Control}
+
+\author[M. Bachl et al.]{%
+	\underline{Maximilian Bachl}\email{maximilian.bachl@tuwien.ac.at} \and Tanja Zseby \and Joachim Fabini
+}
+
+\institute{%
+	Technische Universität Wien, Vienna, Austria
+}
+
+%Kann angepasst werden, wie es beliebt. Entweder das Datum der Präsentation oder das Datum der aktuellen Präsentations-Version.
+%\date[\the\day.\the\month.\the\year]{\today}
+\date[October 5, 2020]{October 5, 2020}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+\begin{frame}{Loss-based Congestion Control}
+\begin{itemize}
+\item Currently loss-based congestion control (Cubic) is used in the Internet.
+\item Constantly increases sending rate until buffer full and packet loss occurs. 
+\item If packet loss occurs, lower sending rate. 
+\end{itemize}
+\pause
+\begin{block}{Insight:}
+Buffer always gets filled to the maximum $\rightarrow$ high delay.
+\end{block}
+\end{frame}
+
+\begin{frame}{Delay-based Congestion Control}
+\begin{itemize}
+\item Increase sending rate until buffer fills and delay increases. 
+\item Decrease sending rate if delay is too high.
+\end{itemize}
+\pause
+\begin{block}{Insight:}
+Same throughput but lower delay than loss-based congestion control. 
+\end{block}
+\end{frame}
+
+\begin{frame}{Loss-based Congestion Control -- Example}
+\begin{figure}[h]
+\centering
+\subfloat[Throughput (receiving rate)]{%
+  \includegraphics[width=0.48\columnwidth]{{"figures/plots/throughput_1_just_one_flow_cubic_tcp_port9010_fq_10_10_20_1600183264284.pcap"}.pdf}%
+  \label{fig:just_one_flow_tcp_throughput}
+}\hfill
+\subfloat[delay]{%
+  \includegraphics[width=0.48\columnwidth]{{"figures/plots/rtt_1_just_one_flow_cubic_tcp_port9010_fq_10_10_20_1600183264284.pcap"}.pdf}%
+  \label{fig:just_one_flow_tcp_delay}
+}
+\caption{Flow controlled by the loss-based Cubic on a link with a speed of 10\,Mbps, a delay of 10\,ms and a buffer size of 100 packets (\texttt{pfifo}'s default value).}
+\label{fig:just_one_flow_tcp}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Delay-based Congestion Control -- Example}
+\begin{figure}[h]
+\centering
+\subfloat[Throughput (receiving rate)]{%
+  \includegraphics[width=0.48\columnwidth]{{"figures/plots/throughput_1_just_one_flow_vegas_udp_port9000_fq_10_10_20_1600183241479.pcap"}.pdf}%
+}\hfill
+\subfloat[delay]{%
+  \includegraphics[width=0.48\columnwidth]{{"figures/plots/rtt_1_just_one_flow_vegas_udp_port9000_fq_10_10_20_1600183241479.pcap"}.pdf}%
+}
+\caption{Flow controlled by our delay-based algorithm on a link with a speed of 10\,Mbps, a delay of 10\,ms and a buffer size of 100 packets.}
+\label{fig:just_one_flow_udp}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Comparing delay- and loss-based}
+\begin{block}{Insight:}
+Delay-based Congestion Control achieves the same throughput but much lower delay.\end{block}
+\end{frame}
+
+\begin{frame}{Delay- vs.~Loss-based -- Loss-based}
+\begin{figure}[h]
+\centering
+\subfloat[Throughput (receiving rate)]{%
+  \includegraphics[width=0.48\columnwidth]{{"figures/plots/throughput_1_competing_flow_pfifo_vegas_tcp_port9010_pfifo_10_50_20_1600182743408.pcap"}.pdf}%
+}\hfill
+\subfloat[delay]{%
+  \includegraphics[width=0.48\columnwidth]{{"figures/plots/rtt_1_competing_flow_pfifo_vegas_tcp_port9010_pfifo_10_50_20_1600182743408.pcap"}.pdf}%
+}
+\caption{Flow controlled by the loss-based Cubic on a link with a speed of 50\,Mbps, a delay of 10\,ms and a buffer size of 100 packets. The bottleneck is controlled by a shared queue (no FQ) and is shared with the flow of Figure~\ref{fig:pfifo_udp}.}
+\label{fig:pfifo_tcp}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Delay- vs.~Loss-based together -- Delay-based}
+\begin{figure}[h]
+\centering
+\subfloat[Throughput (receiving rate)]{%
+  \includegraphics[width=0.48\columnwidth]{{"figures/plots/throughput_1_competing_flow_pfifo_vegas_udp_port9000_pfifo_10_50_20_1600182743408.pcap"}.pdf}%
+}\hfill
+\subfloat[delay]{%
+  \includegraphics[width=0.48\columnwidth]{{"figures/plots/rtt_1_competing_flow_pfifo_vegas_udp_port9000_pfifo_10_50_20_1600182743408.pcap"}.pdf}%
+}
+\caption{Flow (started 5\,s later) controlled by our delay-based algorithm on a link with a speed of 50\,Mbps, a delay of 10\,ms and a buffer size of 100 packets. The bottleneck is controlled by a shared queue (no FQ) and is shared with the flow of Figure~\ref{fig:pfifo_tcp}.}
+\label{fig:pfifo_udp}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Delay- vs.~Loss-based}
+\begin{block}{Insight:}
+When loss-based and delay-based congestion control compete, loss-based one eats delay-based one's lunch!\end{block}
+\end{frame}
+
+\begin{frame}{Fair Queuing}
+\begin{itemize}
+\item Deployed in switches and routers
+\item Each flow gets separate queue
+\item All flows peacefully coexist, loss-based and delay-based ones
+\end{itemize}
+\begin{block}{Insight:}
+Fair queuing enables the use of delay-based congestion control!
+\end{block}
+\end{frame}
+
+\begin{frame}{Summary}
+\begin{itemize}
+\item Delay-based congestion control offers same throughput but lower delay than loss-based ones
+\item When competing, loss-based flows will gain all bandwidth. Delay-based flows ``starve''. 
+\item Fair queuing solves this
+\end{itemize}
+\begin{block}{Insight:}
+If flows could detect the presence of fair queuing, they could switch to delay-based congestion control!
+\end{block}
+\end{frame}
+
+\section{Concept}
+\begin{frame}{Overall Algorithm}
+\begin{enumerate}
+\item During flow startup, determine if fair queuing is used at the bottleneck or not.
+\item If this is determined, change to a delay-based congestion control algorithm if fair queuing is used and to a loss-based one otherwise.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Fair queuing detection algorithm}
+\begin{enumerate}
+\item Launch two concurrent flows, flow 1 and flow 2. Initialize flow 1 with some starting sending rate and flow 2 with two times that rate. 
+\item After every delay, if no packet loss occurred, double the sending rate of both flows. 
+\item If packet loss occurred in both flows in the previous delay, calculate the following metric if each flow got an equal share of bandwidth (fair queuing) or not (no fair queuing).
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Fair queuing detection algorithm -- Example}
+\begin{figure}
+\centering
+\subfloat[Sending rate]{\includegraphics[width=0.33\columnwidth]{{"figures/fq_illustration_throughput"}.pdf}
+\label{fig:throughput}}
+\subfloat[Receiving rate\\ (no fair queuing).]{\includegraphics[width=0.33\columnwidth]{{"figures/fq_illustration_goodput_no_fq"}.pdf}
+\label{fig:goodput_no_fq}}
+\subfloat[Receiving rate\\ (fair queuing).]{\includegraphics[width=0.33\columnwidth]{{"figures/fq_illustration_goodput_fq"}.pdf}
+\label{fig:goodput_fq}}
+\caption{Example of our proposed flow startup mechanism.}
+\label{fig:illustration}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Simple delay-based congestion control}
+\begin{enumerate}
+\item If $\textit{current rtt}$ $\leq$ $\textit{smallest rtt ever measured on the connection}$ $+$ $5\textit{ms}$ then increase the sending rate by 1\%.
+\item Otherwise ($\textit{current rtt}$ $>$ $\textit{smallest rtt ever measured on the connection}$ $+$ $5\textit{ms}$) decrease the sending rate by 5\%.
+\end{enumerate}
+\end{frame}
+
+\section{Results}
+\begin{frame}{Cubic -- Example}
+\begin{figure}[h]
+\centering
+\subfloat[Throughput (receiving rate)]{%
+  \includegraphics[width=0.48\columnwidth]{{"figures/plots/throughput_1_competing_flow_fq_tcp_port9010_fq_10_50_20_1600182657352.pcap"}.pdf}%
+}\hfill
+\subfloat[delay]{%
+  \includegraphics[width=0.48\columnwidth]{{"figures/plots/rtt_1_competing_flow_fq_tcp_port9010_fq_10_50_20_1600182657352.pcap"}.pdf}%
+}
+\caption{Flow controlled by the loss-based Cubic on a link with a speed of 50\,Mbps, a delay of 10\,ms and a buffer size of 100 packets. The bottleneck is controlled by fair queuing and is shared with the flow of Figure~\ref{fig:fq_udp}.}
+\label{fig:fq_tcp}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Our Algorithm -- Example}
+\begin{figure}[h]
+\centering
+\subfloat[Throughput (receiving rate)]{%
+  \includegraphics[width=0.48\columnwidth]{{"figures/plots/throughput_1_competing_flow_fq_udp_port9000_fq_10_50_20_1600182657352.pcap"}.pdf}%
+}\hfill
+\subfloat[delay]{%
+  \includegraphics[width=0.48\columnwidth]{{"figures/plots/rtt_1_competing_flow_fq_udp_port9000_fq_10_50_20_1600182657352.pcap"}.pdf}%
+}
+\caption{Flow (started 5\;s later) controlled by our delay-based congestion control on a link with a speed of 50\,Mbps, a delay of 10\,ms and a buffer size of 100 packets. The bottleneck is controlled by fair queuing and is shared with the flow of Figure~\ref{fig:fq_tcp}.}
+\label{fig:fq_udp}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Accuracy of our fair queuing detection}
+\begin{itemize}
+\item Vary bandwidth from 5 to 50\,Mbps, delay from 10 to 100\,ms and the buffer size from 1 to 100 packets
+\item 125 different configurations
+\item Each configuration once with fair queuing and once without
+\item Accuracy 98\%
+\item Same as above but with cross traffic: also 98\% accuracy
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Systematic evaluation}
+\begin{itemize}
+\item Vary bandwidth from 5 to 50\,Mbps, delay from 10 to 100\,ms and the buffer size from 1 to 100 packets
+\item 27 different configurations
+\item Always fair queuing
+\item Compare our algorithm with Cubic
+\item Cubic: Throughput 18\,Mbit/s; mean delay 109\,ms
+\item Our algorithm: Throughput 25\,Mbit/s; mean delay 74\,ms
+\end{itemize}
+\end{frame}
+
+\section{Discussion}
+\begin{frame}{Pacing}
+\begin{itemize}
+\item During flow startup two concurrent flows (flow 2 having double the rate of flow 1)
+\item Our observation: flow 1 has receiving rate of 0!
+\item Cause: Pacing: Packets are sent in regular intervals. 
+\begin{enumerate}
+\item Flow 2 sends a packet that fills the last place in the buffer
+\item Flow 1's packet arrives a bit later: Buffer full, packet lost.
+\item This happens always since they send at regular intervals with flow 1's packet coincidentally always coming a bit after flow 2's. 
+\end{enumerate}
+\item Solution: Randomize packet sending times a little bit. 
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Conclusion}
+\begin{itemize}
+\item If fair queuing is deployed, we can have significantly smaller delay. 
+\item Our proposal seems to work well.
+\item Especially useful for long delay-sensitive flows like cloud gaming, video conferencing. 
+\end{itemize}
+\end{frame}
+
+\makelastslide
+
+\end{document}
