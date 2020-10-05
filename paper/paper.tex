@@ -35,6 +35,10 @@
 \newcommand{\todo}[1]{\mynote{TODO}{#1}{red}}
 \newcommand{\noteMax}[1]{\mynote{Max}{#1}{green}}
 
+\def\anonymize{yes}
+\def\tempYes{yes}
+\def\tempNo{no}
+
 \begin{document}
 %
 %JF: \title{Detecting Fair Queuing to Enable Better Congestion Control}
@@ -47,25 +51,28 @@
 % If the paper title is too long for the running head, you can set
 % an abbreviated paper title here
 %
+\ifx\anonymize\tempYes
 \author{Anonymous authors}
 %
 \authorrunning{Anonymous authors}
 % First names are abbreviated in the running head.
 % If there are more than two authors, 'et al.' is used.
 %
-%\author{Maximilian Bachl\inst{1}\orcidID{0000-0001-9482-7428} \and
-%Joachim Fabini\inst{2,3}\orcidID{0000-0002-8285-1591} \and
-%Tanja Zseby\inst{3}\orcidID{0000-0002-5391-467X}}
-%%
-%\authorrunning{M. Bachl et al.}
-%% First names are abbreviated in the running head.
-%% If there are more than two authors, 'et al.' is used.
-%%
-%\institute{TU Wien, Vienna, Austria; 
-%\email{firstname.lastname@tuwien.ac.at}}
+\else
+\author{Maximilian Bachl\inst{1}\orcidID{0000-0001-9482-7428} \and
+Joachim Fabini\inst{2,3}\orcidID{0000-0002-8285-1591} \and
+Tanja Zseby\inst{3}\orcidID{0000-0002-5391-467X}}
 %
+\authorrunning{M. Bachl et al.}
+% First names are abbreviated in the running head.
+% If there are more than two authors, 'et al.' is used.
+%
+\institute{TU Wien, Vienna, Austria; 
+\email{firstname.lastname@tuwien.ac.at}}
+\fi
+
 \maketitle              % typeset the header of the contribution
-%
+
 
 %JF: FIXME: A fundamental problem that we should perhaps address in a brief statement: The proposed method does not work for cases in which load balancers are on the path. Distinct flows are likely to result in distinct hashes/flowIDs, meaning that the balancer will potentially assign them to distinct paths. So we may add a restrictive statement to the discussion that we assume that all flows share the same bottleneck? In addition we may state that no service/port priorization is in place.
 %JF Any other idea?
@@ -93,7 +100,7 @@ We show that this solution reliably determines the presence of fair queuing and 
 %JF: delay-based was imo mistaken here!
 While our mechanism is beneficial for network flows in general, we argue that it is most useful for long-running delay-sensitive flows, such as cloud gaming, video conferencing etc. 
 
-To make our work reproducible and to encourage further research, we make the code, the results and the figures publicly available\footnote{\url{https://github.com/CN-TU/PCC-Uspace}}. 
+To make our work reproducible and to encourage further research, we make the code, the results and the figures publicly available\footnote{\ifx\anonymize\tempYes $\langle$anonymized$\rangle$\else\url{https://github.com/CN-TU/PCC-Uspace}\fi}. 
 
 \section{Related work}
 Our work depends on active measurements for the startup phase of \gls{cc} and proposes a new measurement technique to detect \gls{aqm}. This section discusses preliminary work related to these fields. 

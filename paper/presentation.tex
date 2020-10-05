@@ -125,7 +125,7 @@ Delay-based Congestion Control achieves the same throughput but much lower delay
 
 \begin{frame}{Delay- vs.~Loss-based}
 \begin{block}{Insight:}
-When loss-based and delay-based congestion control compete, loss-based one eats delay-based one's lunch!\end{block}
+When loss-based and delay-based congestion control compete, loss-based gets no bandwidth!\end{block}
 \end{frame}
 
 \begin{frame}{Fair Queuing}
@@ -142,7 +142,7 @@ Fair queuing enables the use of delay-based congestion control!
 \begin{frame}{Summary}
 \begin{itemize}
 \item Delay-based congestion control offers same throughput but lower delay than loss-based ones
-\item When competing, loss-based flows will gain all bandwidth. Delay-based flows ``starve''. 
+\item When competing, loss-based flows will gain all bandwidth. Delay-based flows ``starve''
 \item Fair queuing solves this
 \end{itemize}
 \begin{block}{Insight:}
@@ -153,16 +153,16 @@ If flows could detect the presence of fair queuing, they could switch to delay-b
 \section{Concept}
 \begin{frame}{Overall Algorithm}
 \begin{enumerate}
-\item During flow startup, determine if fair queuing is used at the bottleneck or not.
-\item If this is determined, change to a delay-based congestion control algorithm if fair queuing is used and to a loss-based one otherwise.
+\item During flow startup, determine if fair queuing is used at the bottleneck or not
+\item If this is determined, change to a delay-based congestion control algorithm if fair queuing is used and to a loss-based one otherwise
 \end{enumerate}
 \end{frame}
 
 \begin{frame}{Fair queuing detection algorithm}
 \begin{enumerate}
-\item Launch two concurrent flows, flow 1 and flow 2. Initialize flow 1 with some starting sending rate and flow 2 with two times that rate. 
-\item After every delay, if no packet loss occurred, double the sending rate of both flows. 
-\item If packet loss occurred in both flows in the previous delay, calculate the following metric if each flow got an equal share of bandwidth (fair queuing) or not (no fair queuing).
+\item Launch two concurrent flows, flow 1 and flow 2. Initialize flow 1 with some starting sending rate and flow 2 with two times that rate
+\item After every delay, if no packet loss occurred, double the sending rate of both flows
+\item If packet loss occurred in both flows in the previous delay, calculate the following metric if each flow got an equal share of bandwidth (fair queuing) or not (no fair queuing)
 \end{enumerate}
 \end{frame}
 
