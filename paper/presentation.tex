@@ -134,6 +134,7 @@ When loss-based and delay-based congestion control compete, loss-based gets no b
 \item Each flow gets separate queue
 \item All flows peacefully coexist, loss-based and delay-based ones
 \end{itemize}
+\pause
 \begin{block}{Insight:}
 Fair queuing enables the use of delay-based congestion control!
 \end{block}
@@ -141,10 +142,11 @@ Fair queuing enables the use of delay-based congestion control!
 
 \begin{frame}{Summary}
 \begin{itemize}
-\item Delay-based congestion control offers same throughput but lower delay than loss-based ones
+\item Delay-based congestion control offers same throughput but lower delay than loss-based congestion control
 \item When competing, loss-based flows will gain all bandwidth. Delay-based flows ``starve''
 \item Fair queuing solves this
 \end{itemize}
+\pause
 \begin{block}{Insight:}
 If flows could detect the presence of fair queuing, they could switch to delay-based congestion control!
 \end{block}
