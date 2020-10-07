@@ -33,7 +33,7 @@ To see how accurate our mechanism to detect the presence of Fair Queuing is, run
         
 ### Systematic evaluation
 
-To do a systematic evalution of *loss-based congestion control*, run
+To do a systematic evalution of *loss-based congestion control (Cubic)*, run
 
     sudo python3 test.py --run_scenario evaluation --only_iperf --competing_flow 
     
