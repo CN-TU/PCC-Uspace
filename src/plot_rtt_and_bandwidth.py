@@ -11,6 +11,8 @@ plt.rcParams["font.family"] = "serif"
 plt.rcParams['pdf.fonttype'] = 42
 plt.rcParams["font.size"] = 8
 
+os.makedirs("plots", exist_ok=True)
+
 interval = 1
 pcap_file = sys.argv[1]
 # assert pcap_file.startswith("sender_"), pcap_file
