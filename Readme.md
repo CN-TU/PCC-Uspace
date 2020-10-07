@@ -11,11 +11,11 @@ make
 ```
 If you change the code and want to rebuild it, it is important you have to run ``make clean && make``.
 
-For analyzing data, please compile our utility to analyze TCP congestion windows, which is called ```wintracker``` using ```go build -o wintracker wintracker.go```.
+Please also compile our utility to analyze TCP congestion windows, which is called ```wintracker``` using ```go build -o wintracker wintracker.go```. It is required for the evaluation of results. 
 
 ## Experimenting
 
-To run an experiment, run the following command, for example:
+To run an experiment, use ```test.py```. For example, it can be used as follows:
 
     sudo python3 test.py --qdisc pfifo --buffer_size 50 --delay 25 --rate 50 --time 30
 
@@ -23,11 +23,8 @@ To run an experiment, run the following command, for example:
 
 Use the ```--store_pcaps``` option to write pcaps of each flow, which can be used to create plots of bandwidth and delay. 
     
-To create plots of bandwidth/delay run 
-
-    ls pcaps/sender*.pcap | xargs -L 1 ./plot_rtt_and_bandwidth.py
-    
 ### Accuracy 
+
 To see how accurate our mechanism to detect the presence of Fair Queuing is, run 
 
     sudo python3 test.py --run_scenario accuracy
@@ -42,4 +39,8 @@ For a systematic evalution of *our algorithm*, run
 
     sudo python3 test.py --run_scenario evaluation
     
-Again, use the script ```plot_rtt_and_bandwidth.py``` as described above to visualize bandwidth and throughput. 
+### Plotting
+
+To create plots of bandwidth/delay run 
+
+    ls pcaps/sender*.pcap | xargs -L 1 ./plot_rtt_and_bandwidth.py
