@@ -11,9 +11,11 @@ make
 ```
 If you change the code and want to rebuild it, it is important you have to run ``make clean && make``.
 
-Please also compile our utility to analyze TCP congestion windows, which is called ```wintracker``` using ```go build -o wintracker wintracker.go```. It is required for the evaluation of results. 
+Please also compile our utility to analyze TCP congestion windows, which is called ```wintracker``` using ```go build -o wintracker wintracker.go```. It is required for the evaluation of results. Our go version is ```1.10.2```. 
 
 ## Experimenting
+
+We use the network emulation library [```py-virtnet```](https://pypi.org/project/py-virtnet/) ([GitHub repository](https://github.com/CN-TU/py-virtnet)) for our experiments. Our python version is ```3.7.3```.
 
 To run an experiment, use ```test.py```. For example, it can be used as follows:
 
