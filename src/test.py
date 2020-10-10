@@ -299,7 +299,7 @@ elif opt.run_scenario == "evaluation":
 				opt.delay = int(round(delay))
 				opt.buffer_size = int(round(buffer))
 				opt.qdisc = "fq" if fq else "pfifo"
-				opt.time = 20
+				opt.time = 30
 
 				with virtnet.Manager() as context:
 					client_output, timestamp = run(context, "accuracy")
