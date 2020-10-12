@@ -206,7 +206,7 @@ $10\%$ of all Internet traffic \cite{ruth_first_2018} and is growing. Moreover, 
 
 \section{Results}
 
-For the evaluation we use the network emulation library \texttt{py-virtnet}\footnote{\url{https://pypi.org/project/py-virtnet/}}. For the experiments with \gls{fq} we use the \texttt{fq} module for Linux, for the experiments with a shared queue we use \texttt{pfifo}. 
+For the evaluation we use the network emulation library \texttt{py-virtnet}\footnote{\url{https://pypi.org/project/py-virtnet/}}. For the experiments with \gls{fq} we use the \texttt{fq} module for Linux. This module keeps one drop tail queue for each flow with a configurable maximum size of packets. However, the design of our \gls{fq} detection algorithm does not assume any particular queue management algorithm being used for the queue of each flow and thus is also compatible with more sophisticated \gls{aqm} mechanisms which were explicitly developed to be used in conjunction with \gls{fq} \cite{taht_flow_2018,hoiland-jorgensen_piece_2018,bachl_cocoa_2019,bachl_lfq_2020}. For the experiments with a shared queue we use \texttt{pfifo}, which is a simple drop tail queue which can contain up to a fixed number of packets. 
 
 \subsection{Delay- vs.~loss-based \gls{cc}}
 

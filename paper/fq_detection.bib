@@ -475,3 +475,51 @@
 	year = {2019},
 	file = {Apple Music on iOS13 uses Multipath TCP through load-balancers — MPTCP:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/V4IBBXV9/apple_music_on_ios13_uses_multipath_tcp_through_load_balancers.html:text/html}
 }
+
+@article{bachl_lfq_2020,
+	title = {{LFQ}: {Online} {Learning} of {Per}-flow {Queuing} {Policies} using {Deep} {Reinforcement} {Learning}},
+	shorttitle = {{LFQ}},
+	abstract = {The increasing number of different, incompatible congestion control algorithms has led to an increased deployment of fair queuing. Fair queuing isolates each network flow and can thus guarantee fairness for each flow even if the flows' congestion controls are not inherently fair. So far, each queue in the fair queuing system either has a fixed, static maximum size or is managed by an Active Queue Management (AQM) algorithm like CoDel. In this paper we design an AQM mechanism (Learning Fair Qdisc (LFQ)) that dynamically learns the optimal buffer size for each flow according to a specified reward function online. We show that our Deep Learning based algorithm can dynamically assign the optimal queue size to each flow depending on its congestion control, delay and bandwidth. Comparing to competing fair AQM schedulers, it provides significantly smaller queues while achieving the same or higher throughput.},
+	urldate = {2020-10-12},
+	journal = {LCN},
+	author = {Bachl, Maximilian and Fabini, Joachim and Zseby, Tanja},
+	month = jul,
+	year = {2020},
+	note = {arXiv: 2007.02735},
+	keywords = {Computer Science - Machine Learning, Computer Science - Networking and Internet Architecture},
+	file = {arXiv Fulltext PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/NE3LLY35/Bachl et al. - 2020 - LFQ Online Learning of Per-flow Queuing Policies .pdf:application/pdf;arXiv.org Snapshot:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/TJI9QI7E/2007.html:text/html}
+}
+
+@inproceedings{bachl_cocoa_2019,
+	address = {New York, NY, USA},
+	series = {{BS} '19},
+	title = {Cocoa: {Congestion} {Control} {Aware} {Queuing}},
+	isbn = {978-1-4503-7745-4},
+	shorttitle = {Cocoa},
+	url = {https://doi.org/10.1145/3375235.3375236},
+	doi = {10.1145/3375235.3375236},
+	abstract = {Recent model-based congestion control algorithms such as BBR use repeated measurements at the endpoint to build a model of the network connection and use it to achieve optimal throughput with low queuing delay. Conversely, applying this model-based approach to Active Queue Management (AQM) has so far received less attention. We propose the new AQM scheduler cocoa based on fair queuing, which adapts the buffer size depending on the needs of each flow without requiring active participation from the endpoint. We implement this scheduler for the Linux kernel and show that it interacts well with the most common congestion control algorithms and can significantly increase throughput compared to fair CoDel while avoiding overbuffering.},
+	urldate = {2020-10-12},
+	booktitle = {Proceedings of the 2019 {Workshop} on {Buffer} {Sizing}},
+	publisher = {Association for Computing Machinery},
+	author = {Bachl, Maximilian and Fabini, Joachim and Zseby, Tanja},
+	month = dec,
+	year = {2019},
+	pages = {1--7},
+	file = {Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/XVMGEECK/Bachl et al. - 2019 - Cocoa Congestion Control Aware Queuing.pdf:application/pdf}
+}
+
+@inproceedings{hoiland-jorgensen_piece_2018,
+	title = {Piece of {CAKE}: {A} {Comprehensive} {Queue} {Management} {Solution} for {Home} {Gateways}},
+	shorttitle = {Piece of {CAKE}},
+	doi = {10.1109/LANMAN.2018.8475045},
+	abstract = {The last several years has seen a renewed interest in smart queue management to curb excessive network queueing delay, as people have realised the prevalence of bufferbloat in real networks. However, for an effective deployment at today's last mile connections, an improved queueing algorithm is not enough in itself, as often the bottleneck queue is situated in legacy systems that cannot be upgraded. In addition, features such as per-user fairness and the ability to de-prioritise background traffic are often desirable in a home gateway.In this paper we present Common Applications Kept Enhanced (CAKE), a comprehensive network queue management system designed specifically for home Internet gateways. CAKE packs several compelling features into an integrated solution, thus easing deployment. These features include: bandwidth shaping with overhead compensation for various link layers; reasonable DiffServ handling; improved flow hashing with both per-flow and per-host queueing fairness; and filtering of TCP ACKs. Our evaluation shows that these features offer compelling advantages, and that CAKE has the potential to significantly improve performance of last-mile internet connections.},
+	booktitle = {2018 {IEEE} {International} {Symposium} on {Local} and {Metropolitan} {Area} {Networks} ({LANMAN})},
+	author = {Høiland-Jørgensen, Toke and Täht, Dave and Morton, Jonathan},
+	month = jun,
+	year = {2018},
+	note = {ISSN: 1944-0375},
+	keywords = {Bandwidth, CAKE, Clocks, compelling features, comprehensive network queue management system, comprehensive queue management solution, de-prioritise background traffic, Diffserv networks, effective deployment, excessive network queueing delay, Hardware, home gateway, home Internet gateways, improved flow hashing, improved queueing algorithm, integrated solution, Internet, internetworking, Kernel, last-mile internet connections, legacy systems, Linux, Logic gates, mile connections, per-host queueing fairness, per-user fairness, queueing theory, renewed interest, smart queue management, telecommunication traffic, transport protocols},
+	pages = {37--42},
+	file = {IEEE Xplore Abstract Record:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/TIMBHIR5/8475045.html:text/html;IEEE Xplore Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/BVN3UIGR/Høiland-Jørgensen et al. - 2018 - Piece of CAKE A Comprehensive Queue Management So.pdf:application/pdf}
+}
