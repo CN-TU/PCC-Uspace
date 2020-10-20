@@ -486,7 +486,7 @@
 	month = jul,
 	year = {2020},
 	note = {arXiv: 2007.02735},
-	keywords = {Computer Science - Machine Learning, Computer Science - Networking and Internet Architecture},
+	keywords = {Computer Science - Networking and Internet Architecture, Computer Science - Machine Learning},
 	file = {arXiv Fulltext PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/NE3LLY35/Bachl et al. - 2020 - LFQ Online Learning of Per-flow Queuing Policies .pdf:application/pdf;arXiv.org Snapshot:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/TJI9QI7E/2007.html:text/html}
 }
 
@@ -519,7 +519,26 @@
 	month = jun,
 	year = {2018},
 	note = {ISSN: 1944-0375},
-	keywords = {Bandwidth, CAKE, Clocks, compelling features, comprehensive network queue management system, comprehensive queue management solution, de-prioritise background traffic, Diffserv networks, effective deployment, excessive network queueing delay, Hardware, home gateway, home Internet gateways, improved flow hashing, improved queueing algorithm, integrated solution, Internet, internetworking, Kernel, last-mile internet connections, legacy systems, Linux, Logic gates, mile connections, per-host queueing fairness, per-user fairness, queueing theory, renewed interest, smart queue management, telecommunication traffic, transport protocols},
+	keywords = {telecommunication traffic, Bandwidth, Internet, transport protocols, Kernel, Linux, queueing theory, CAKE, Clocks, compelling features, comprehensive network queue management system, comprehensive queue management solution, de-prioritise background traffic, Diffserv networks, effective deployment, excessive network queueing delay, Hardware, home gateway, home Internet gateways, improved flow hashing, improved queueing algorithm, integrated solution, internetworking, last-mile internet connections, legacy systems, Logic gates, mile connections, per-host queueing fairness, per-user fairness, renewed interest, smart queue management},
 	pages = {37--42},
 	file = {IEEE Xplore Abstract Record:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/TIMBHIR5/8475045.html:text/html;IEEE Xplore Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/BVN3UIGR/Høiland-Jørgensen et al. - 2018 - Piece of CAKE A Comprehensive Queue Management So.pdf:application/pdf}
+}
+
+@inproceedings{goyal_elasticity_2018,
+	address = {New York, NY, USA},
+	series = {{ANRW} '18},
+	title = {Elasticity {Detection}: {A} {Building} {Block} for {Delay}-{Sensitive} {Congestion} {Control}},
+	isbn = {978-1-4503-5585-8},
+	shorttitle = {Elasticity {Detection}},
+	url = {https://doi.org/10.1145/3232755.3232772},
+	doi = {10.1145/3232755.3232772},
+	abstract = {This paper develops a technique to detect whether the cross traffic competing with a flow is elastic or not, and shows how to use the elasticity detector to improve congestion control. If the cross traffic is elastic, i.e., made up of buffer-filling flows like Cubic or Reno, then one should use a scheme that competes well with such traffic. Such a scheme will not be able to control delays because the cross traffic will not cooperate. If, however, cross traffic is inelastic, then one can use a suitable delay-sensitive congestion control algorithm, which can control delays, but which would have obtained dismal throughput when run concurrently with a buffer-filling algorithm. We use the elasticity detector to demonstrate a congestion control framework that always achieves high utilization, but which can also achieve low delays when cross traffic permits it. The technique uses an asymmetric sinusoidal pulse patternand estimates elasticity by computing the frequency response(FFT) of the cross traffic estimate; we have measured its accuracy to be over 90\%. We have developed Nimbus, a protocol that explicitly switches between TCP-competitive and delay-sensitive modes using the elasticity detector. Our results on emulated and real-world paths show that Nimbus achieves throughput comparable to or better than Cubic always, but with delays that are much lower when cross traffic is inelastic. Unlike BBR, Nimbus is fair to Cubic, and has significantly lower delay in all cases; for example, on real-world paths, Nimbus has 11\% lower throughput but at 40-50 ms lower packet delay.},
+	urldate = {2020-10-20},
+	booktitle = {Proceedings of the {Applied} {Networking} {Research} {Workshop}},
+	publisher = {Association for Computing Machinery},
+	author = {Goyal, Prateesh and Narayan, Akshay and Cangialosi, Frank and Raghavan, Deepti and Narayana, Srinivas and Alizadeh, Mohammad and Balakrishnan, Hari},
+	month = jul,
+	year = {2018},
+	pages = {75},
+	file = {Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/ARJKDSR6/Goyal et al. - 2018 - Elasticity Detection A Building Block for Delay-S.pdf:application/pdf}
 }
