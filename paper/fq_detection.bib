@@ -539,7 +539,62 @@
 	month = nov,
 	year = {2020},
 	note = {ISSN: 0742-1303},
-	keywords = {Bandwidth, Correlation, Delays, Heuristic algorithms, Neural networks, Throughput, Training},
+	keywords = {Throughput, Bandwidth, Delays, Training, Neural networks, Heuristic algorithms, Correlation},
 	pages = {417--420},
 	file = {IEEE Xplore Abstract Record:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/NEPZGMP4/9314771.html:text/html}
+}
+
+@inproceedings{de_coninck_multipath_2017,
+	address = {New York, NY, USA},
+	series = {{CoNEXT} '17},
+	title = {Multipath {QUIC}: {Design} and {Evaluation}},
+	isbn = {978-1-4503-5422-6},
+	shorttitle = {Multipath {QUIC}},
+	url = {https://doi.org/10.1145/3143361.3143370},
+	doi = {10.1145/3143361.3143370},
+	abstract = {Quick UDP Internet Connection (QUIC) is a recent protocol initiated by Google that combines the functions of HTTP/2, TLS, and TCP directly over UDP, with the goal to reduce the latency of client-server communication. It can replace the traditional HTTP/TLS/TCP stack and the IETF has chartered a working group to standardize it. QUIC encrypts all data and most protocol headers to prevent interferences from middleboxes. Motivated by the success of Multipath TCP (MPTCP), we design Multipath QUIC (MPQUIC), a QUIC extension that enables a QUIC connection to use different paths such as WiFi and LTE on smartphones, or IPv4 and IPv6 on dual-stack hosts. We implement MPQUIC as an extension of the quic-go implementation. We evaluate the benefits of QUIC and MPQUIC by comparing them with TCP and MPTCP in a variety of settings. MPQUIC maintains MPTCP's benefits (aggregation benefit, network handover). Without packet losses, while performance of single-path TCP and single-path QUIC are similar, MPQUIC can outperform MPTCP. In lossy scenarios, (MP)QUIC is more suited than (MP)TCP.},
+	urldate = {2021-02-01},
+	booktitle = {Proceedings of the 13th {International} {Conference} on emerging {Networking} {EXperiments} and {Technologies}},
+	publisher = {Association for Computing Machinery},
+	author = {De Coninck, Quentin and Bonaventure, Olivier},
+	month = nov,
+	year = {2017},
+	pages = {160--166},
+	file = {Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/KD5ZKQB5/De Coninck and Bonaventure - 2017 - Multipath QUIC Design and Evaluation.pdf:application/pdf}
+}
+
+@article{shakkottai_rtt_2004,
+	title = {The {RTT} {Distribution} of {TCP} {Flows} in the {Internet} and its {Impact} on {TCP}-based {Flow} {Control}},
+	abstract = {It is well known that the performance of a TCP ﬂow is affected by its round-trip time (RTT), i.e., the elapsed time between the instant a packet is released by the source to the instant the corresponding ack is received by the source. The distribution of RTTs can dramatically aﬀect not only the data rates realized by individual ﬂows sharing a link but also the utilization of Internet links. In this paper we present a comprehensive study of the RTT distribution for TCP traﬃc in the Internet.},
+	language = {en},
+	author = {Shakkottai, Srinivas and Srikant, R and Brownlee, Nevil and Broido, Andre},
+	year = {2004},
+	pages = {15},
+	file = {Shakkottai et al. - The RTT Distribution of TCP Flows in the Internet .pdf:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/XVA99DPN/Shakkottai et al. - The RTT Distribution of TCP Flows in the Internet .pdf:application/pdf}
+}
+
+@inproceedings{alves_empirical_2017,
+	address = {Miami, Florida, USA},
+	title = {An {Empirical} {Characterization} of {Internet} {Round}-{Trip} {Times}},
+	isbn = {978-1-4503-5165-2},
+	url = {http://dl.acm.org/citation.cfm?doid=3132114.3132123},
+	doi = {10.1145/3132114.3132123},
+	abstract = {End-to-end round-trip times (RTTs), which measure the time when the source transmitted data and when it received confirmation that the data was received, have been used by several Internet applications and protocols as a way to estimate network load and congestion. However, the Internet’s ever increasing size and complexity pose many challenges to the study of the RTT. RTT’s stochastic nature combined with diverse network topologies, technologies, and workloads are part of the problem, as well as difficulty in acquiring representative RTT samples or testing how RTT measurements are affected by changes in protocols. As part of the answer to these challenges, this paper presents a characterization study of RTT traces collected from both real- as well as simulated networked environments. We verify that temporal- and spatial factors cause RTT behavior to exhibit particular trends. Using rigorous analytical methodology, we also confirm that RTT distributions can be modeled as a power law. We then use RTT power law statistics to validate and fine-tune simulation environments.},
+	language = {en},
+	urldate = {2021-02-03},
+	booktitle = {Proceedings of the 13th {ACM} {Symposium} on {QoS} and {Security} for {Wireless} and {Mobile} {Networks} - {Q2SWinet} '17},
+	publisher = {ACM Press},
+	author = {Alves, Daniel S.F. and Obraczka, Katia},
+	year = {2017},
+	pages = {23--30},
+	file = {Alves and Obraczka - 2017 - An Empirical Characterization of Internet Round-Tr.pdf:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/DAP9VRYA/Alves and Obraczka - 2017 - An Empirical Characterization of Internet Round-Tr.pdf:application/pdf}
+}
+
+@article{nichols_controlling_2012,
+	title = {Controlling {Queue} {Delay}},
+	abstract = {A modern AQM is just one piece of the solution to bufferbloat.},
+	urldate = {2019-10-11},
+	journal = {Queue},
+	author = {Nichols, Kathleen and Jacobson, Van},
+	year = {2012}
 }
