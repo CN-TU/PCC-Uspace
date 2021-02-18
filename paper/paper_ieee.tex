@@ -38,6 +38,8 @@
 \usepackage{tikz}
 \usepackage{float}
 
+\usepackage[OT1]{fontenc} 
+
 \usepackage[nomain, toc, acronym]{glossaries}
 \glsdisablehyper
 
@@ -147,13 +149,15 @@ To make our work reproducible and to encourage further research, we make the cod
 \section{Related work}
 Our work depends on active measurements for the startup phase of \gls{cc} and proposes a new measurement technique to detect \gls{aqm}. This section discusses preliminary work related to these fields. 
 
-\subsubsection{\gls{cc} using Active Measurements}
+\subsection{\gls{cc} using Active Measurements}
 Several approaches have been recently proposed which aim to incorporate active measurements into \glspl{cca}. \citep{dong_pcc_2015,dong_pcc_2018} introduced the \gls{cca} \textit{PCC}, which uses active measurements to find the sending rate which optimizes a given reward function. \citep{cardwell_bbr:_2016} introduce the \textit{BBR} \gls{cca}, which uses active measurement to create a model of the network connection. This model is then used to determine the optimal sending rate. An approach proposed by \citep{goyal_elasticity_2018} aims to differentiate bulk transfer flows, which they deem ``elastic'' because they try to grab as much bandwidth as available, from other flows that send at a constant rate, which they call ``unelastic''. They use this elasticity detection to determine if delay-based \gls{cc} can be used or not. If cross traffic is deemed elastic then they use classic loss-based \gls{cc} and otherwise delay-based \gls{cc}. 
 
-\subsubsection{Flow startup techniques} Besides the classical TCP slow start algorithm \citep{stevens_tcp_1997} some other proposals were made such as Quick Start \citep{jain_quick-start_2019}, which aims to speed up flow start by routers informing the end point, which rate they deem appropriate. \citep{jarvinen_congestion_2019} investigate the impact of \gls{aqm} and \gls{cc} during flow startup. They inspect a variety of different \gls{aqm} algorithms and also investigate \gls{fq}. \citep{kuhlewind_chirping_2010} propose ``chirping'' for flow startup to estimate the available bandwidth. This works by sending packets with different gaps between them to verify what the actual link speed is. \citep{mittal_recursively_2014} propose speeding up flow startup by using packets of different priority. The link is flooded with low-priority packets and in case the link is not fully utilized during startup, these low-priority packets are going to be transmitted, allowing the starting flow to achieve high throughput. If the link is already saturated, the low-priority packets are going to be discarded and no other flow suffers. 
+\subsection{Flow startup techniques} Besides the classical TCP slow start algorithm \citep{stevens_tcp_1997} some other proposals were made such as Quick Start \citep{jain_quick-start_2019}, which aims to speed up flow start by routers informing the end point, which rate they deem appropriate. \citep{jarvinen_congestion_2019} investigate the impact of \gls{aqm} and \gls{cc} during flow startup. They inspect a variety of different \gls{aqm} algorithms and also investigate \gls{fq}. \citep{kuhlewind_chirping_2010} propose ``chirping'' for flow startup to estimate the available bandwidth. This works by sending packets with different gaps between them to verify what the actual link speed is. \citep{mittal_recursively_2014} propose speeding up flow startup by using packets of different priority. The link is flooded with low-priority packets and in case the link is not fully utilized during startup, these low-priority packets are going to be transmitted, allowing the starting flow to achieve high throughput. If the link is already saturated, the low-priority packets are going to be discarded and no other flow suffers. 
 
 %JF: Evtl.statt subsubsection Absätze mit Titel fett verwenden um doch einigen Platz zu sparen?
-\subsubsection{Detecting \gls{aqm} mechanisms} There are few publications that investigate methods to detect the presence of an \gls{aqm}. \citep{kargar_bideh_tada_2016} propose a method to detect and distinguish certain popular \gls{aqm} mechanisms. However, unlike our work, it doesn't consider \gls{fq}. \citep{baykal_detection_2017} propose a machine learning based approach to fingerprint \gls{aqm} algorithm. \gls{fq} is not considered, too. 
+\subsection{Detecting \gls{aqm} mechanisms} There are few publications that investigate methods to detect the presence of an \gls{aqm}. \citep{kargar_bideh_tada_2016} propose a method to detect and distinguish certain popular \gls{aqm} mechanisms. However, unlike our work, it doesn't consider \gls{fq}. \citep{baykal_detection_2017} propose a machine learning based approach to fingerprint \gls{aqm} algorithm. \gls{fq} is not considered, too. 
+
+\subsection{Detecting the presence of a shared bottleneck} Several approaches have been proposed to detect whether in a set of flows, some of them share a common bottleneck \cite{hayes_practical_2014,ferlin_revisiting_2016,hayes_online_2020}. These approaches typically operate by comparing some statistics of flows to check whether they correlate between flows. For example, it can be checked if throughput correlates between two flows. If throughput correlates, it can mean that these flows share a common bottleneck link, and if additional flows join at the bottleneck link, all other flows' throughputs go down, which is the reason why they are correlated. While approaches to detect a shared bottleneck link appear to be similar to what this paper is aiming to do, there are differences: Two flows can share a common bottleneck link but the bottleneck link can have fair queuing. Thus the aims of shared bottleneck and fair queuing detection are different. 
 
 \section{Concept}
 \label{sec:concept_fq}
@@ -206,10 +210,10 @@ Figure~\ref{fig:goodput_fq} shows the receiving rate of the two flows measured a
 If \gls{fq} is detected, a simple delay-based \gls{cc} is used from then on. Our algorithm is based on the two following simple rules:
 \begin{enumerate}
 \item If \textit{current rtt} $\leq$ \textit{smallest rtt ever measured on the connection} $+$ 5\textit{ms} then increase the sending rate by 1\%. We choose 5\,ms since a delay of 5\,ms is barely noticeable by humans. This design choice was first established in \citep{nichols_controlling_2012}.
-\item Otherwise (\textit{current rtt} > \textit{smallest rtt ever measured on the connection} + 5\textit{ms}) decrease the sending rate by 5\%.
+\item Otherwise (\textit{current rtt} $>$ \textit{smallest rtt ever measured on the connection} + 5\textit{ms}) decrease the sending rate by 5\%.
 \end{enumerate}
 
-%This \gls{cca} is meant as a simple proof-of-concept to demonstrate the efficacy of our \gls{fq} detection mechanism but we do not claim it to be optimal in any way. 
+This \gls{cca} is meant as a simple proof-of-concept to demonstrate the efficacy of our \gls{fq} detection mechanism but we do not claim it to be optimal in any way. 
 
 \subsection{Fallback loss-based \gls{cc}}
 
@@ -217,7 +221,7 @@ If the absence of \gls{fq} is detected, a loss based \gls{cc} is used as a fallb
 
 \section{Implementation}
 
-We base our implementation on the code of \textit{PCC Vivace} \citep{dong_pcc_2018}, which in turn is an improved version of PCC. The PCC code is based on the \textit{UDT} library \citep{gu_udt_2007}, which is a library that provides a reliable transport protocol similar to TCP on top of UDP. This approach is similar to QUIC \citep{iyengar_quic_2018}. An advantage of implementing our approach on top of UDP as opposed to TCP is that it is easier to develop and modify since no kernel module needs to be created and that it is more secure since the code is isolated in a user space process. 
+We base our implementation on the code of \textit{PCC Vivace} \citep{dong_pcc_2018}, which in turn is an improved version of PCC. The PCC code is based on the \textit{UDT} library \citep{gu_udt_2007}, which is a library that provides a reliable transport protocol similar to TCP on top of UDP. This approach is similar to QUIC \citep{iyengar_quic_2018}. An advantage of implementing our approach on top of UDP as opposed to TCP is that it is easier to develop and modify since no kernel module needs to be created and that it is more secure since the code is isolated in a user space process and most attacks can only influence this process and not the entire kernel. 
 
 \subsection{Deployment}
 

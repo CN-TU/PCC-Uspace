@@ -598,3 +598,64 @@
 	author = {Nichols, Kathleen and Jacobson, Van},
 	year = {2012}
 }
+
+@article{hayes_online_2020,
+	title = {Online {Identification} of {Groups} of {Flows} {Sharing} a {Network} {Bottleneck}},
+	volume = {28},
+	issn = {1558-2566},
+	doi = {10.1109/TNET.2020.3007346},
+	abstract = {Most Internet hosts today support multiple access technologies and network interfaces. Multipath transport protocols, like MPTCP, are being deployed (e.g., in smartphones), allowing transparent simultaneous use of multiple links. Besides providing increased resilience to link failures, multipath transports may better exploit available (aggregate) capacity across all interfaces. The safest way to ensure fairness is to assume that any subflows of a multipath end-to-end connection may share bottleneck links, but knowledge of non-shared bottlenecks could allow multipath senders to exploit more capacity without being unfair to other flows. The problem of reliably detecting the existence of (non)-shared bottlenecks is not trivial and is compounded by the fact that bottlenecks may change due to traffic dynamics. In this paper we focus on practical methods to reliably group flows that share, possibly dynamic, bottlenecks online and in a passive manner (i.e., without injecting measurement traffic). We introduce a novel dynamic clustering algorithm that we apply to update our previous shared bottleneck flow grouping (SBFG) method standardized by the IETF, based on delay statistics. We also adapt an offline SBFG method based on wavelet filters to enable it for online operation. These SBFG methods are evaluated by a simple testbed, rigorous simulation and real-world Internet experiments in a testbed comprised of multihomed hosts. Our results suggest that there is no clear winner, and selection of the “best” SBFG method will have to consider tradeoffs regarding accuracy, lag, and application requirements.},
+	number = {5},
+	journal = {IEEE/ACM Transactions on Networking},
+	author = {Hayes, D. A. and Welzl, M. and Ferlin, S. and Ros, D. and Islam, S.},
+	month = oct,
+	year = {2020},
+	note = {Conference Name: IEEE/ACM Transactions on Networking},
+	keywords = {best SBFG method, bottleneck flow grouping method, Clustering algorithms, Delays, dynamic clustering, dynamic clustering algorithm, group flows, Heuristic algorithms, IEEE transactions, Internet, Internet congestion control, Internet hosts, Loss measurement, multipath congestion control, multipath end-to-end connection, multipath senders, multipath transport protocols, multipath transports, multiple access technologies, network bottleneck, network interfaces, nonshared bottlenecks, offline SBFG method, online operation, share bottleneck links, Shared bottleneck detection, telecommunication network reliability, telecommunication traffic, traffic dynamics, transport protocols},
+	pages = {2229--2242},
+	file = {IEEE Xplore Abstract Record:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/QXI68ETY/9161279.html:text/html;IEEE Xplore Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/CAJZT9FN/Hayes et al. - 2020 - Online Identification of Groups of Flows Sharing a.pdf:application/pdf}
+}
+
+@inproceedings{ferlin_revisiting_2016,
+	title = {Revisiting congestion control for multipath {TCP} with shared bottleneck detection},
+	doi = {10.1109/INFOCOM.2016.7524599},
+	abstract = {Multipath TCP (MPTCP) enables the simultaneous use of multiple links for bandwidth aggregation, better resource utilization and improved reliability. Its coupled congestion control intends to reap the increased bandwidth of multiple links, while avoiding being more aggressive than regular TCP flows on every used link. We argue that this leads to a very conservative behavior when paths do not share a bottleneck. Therefore, in this paper, we first quantify the penalty of the coupled congestion control for links that do not share a bottleneck. Then, in order to overcome this penalty, we design and implement a practical shared bottleneck detection (SBD) algorithm for MPTCP, namely MPTCP-SBD. Through extensive emulations, we show that MPTCP-SBD outperforms all currently deployed MPTCP coupled congestion controls by accurately detecting bottlenecks. For the non-shared bottleneck scenario, we observe throughput gains of up to 40\% with two subflows and the gains increase significantly as the number of subflows increase, reaching more than 100\% for five subflows. Furthermore, for the shared bottleneck scenario, we show that MPTCP-SBD remains fair to TCP. We complement the emulation results with real-network experiments justifying its safeness for deployment.},
+	booktitle = {{IEEE} {INFOCOM} 2016 - {The} 35th {Annual} {IEEE} {International} {Conference} on {Computer} {Communications}},
+	author = {Ferlin, S. and Alay, Ö and Dreibholz, T. and Hayes, D. A. and Welzl, M.},
+	month = apr,
+	year = {2016},
+	keywords = {Algorithm design and analysis, bandwidth aggregation, Congestion Control, coupled congestion control, Coupled Congestion Control, Delays, Internet, Linux, MPTCP, MPTCP-SBD, multipath TCP, Multipath TCP, Reactive power, resource allocation, resource utilization, SBD algorithm, Servers, shared bottleneck detection, Shared Bottleneck Detection, telecommunication congestion control, telecommunication network reliability, Throughput, transport control protocol, transport protocols},
+	pages = {1--9},
+	file = {IEEE Xplore Abstract Record:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/H2ITMQVR/7524599.html:text/html;IEEE Xplore Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/2URV7FIA/Ferlin et al. - 2016 - Revisiting congestion control for multipath TCP wi.pdf:application/pdf}
+}
+
+@inproceedings{hayes_practical_2014,
+	title = {Practical passive shared bottleneck detection using shape summary statistics},
+	doi = {10.1109/LCN.2014.6925767},
+	abstract = {Practical shared bottleneck detection has proved to be a difficult problem. We present a novel passive approach using efficient estimates of time and frequency domain summary statistics. The approach is not CPU nor network intensive, and has numerous potential applications in the Internet. Simulations and tests over the Internet and 3G cellular network show its efficacy in grouping flows correctly.},
+	booktitle = {39th {Annual} {IEEE} {Conference} on {Local} {Computer} {Networks}},
+	author = {Hayes, D. A. and Ferlin, S. and Welzl, M.},
+	month = sep,
+	year = {2014},
+	note = {ISSN: 0742-1303},
+	keywords = {3G cellular network, 3G mobile communication, Correlation, Delays, frequency domain summary statistics, frequency-domain analysis, Internet, Loss measurement, Noise, passive shared bottleneck detection, practical shared bottleneck detection, Receivers, Shape, shape summary statistics, Shared bottleneck detection, statistics, time domain summary statistics, time-domain analysis},
+	pages = {150--158},
+	file = {IEEE Xplore Abstract Record:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/H8E2FHYV/6925767.html:text/html;IEEE Xplore Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/BHKIQF52/Hayes et al. - 2014 - Practical passive shared bottleneck detection usin.pdf:application/pdf}
+}
+
+@article{briscoe_reducing_2016,
+	title = {Reducing {Internet} {Latency}: {A} {Survey} of {Techniques} and {Their} {Merits}},
+	volume = {18},
+	issn = {1553-877X},
+	shorttitle = {Reducing {Internet} {Latency}},
+	doi = {10.1109/COMST.2014.2375213},
+	abstract = {Latency is increasingly becoming a performance bottleneck for Internet Protocol (IP) networks, but historically, networks have been designed with aims of maximizing throughput and utilization. This paper offers a broad survey of techniques aimed at tackling latency in the literature up to August 2014, as well as their merits. A goal of this work is to be able to quantify and compare the merits of the different Internet latency reducing techniques, contrasting their gains in delay reduction versus the pain required to implement and deploy them. We found that classifying techniques according to the sources of delay they alleviate provided the best insight into the following issues: 1) The structural arrangement of a network, such as placement of servers and suboptimal routes, can contribute significantly to latency; 2) each interaction between communicating endpoints adds a Round Trip Time (RTT) to latency, particularly significant for short flows; 3) in addition to base propagation delay, several sources of delay accumulate along transmission paths, today intermittently dominated by queuing delays; 4) it takes time to sense and use available capacity, with overuse inflicting latency on other flows sharing the capacity; and 5) within end systems, delay sources include operating system buffering, head-of-line blocking, and hardware interaction. No single source of delay dominates in all cases, and many of these sources are spasmodic and highly variable. Solutions addressing these sources often both reduce the overall latency and make it more predictable.},
+	number = {3},
+	journal = {IEEE Communications Surveys Tutorials},
+	author = {Briscoe, B. and Brunstrom, A. and Petlund, A. and Hayes, D. and Ros, D. and Tsang, I. and Gjessing, S. and Fairhurst, G. and Griwodz, C. and Welzl, M.},
+	year = {2016},
+	note = {Conference Name: IEEE Communications Surveys Tutorials},
+	keywords = {algorithms, base propagation delay, bufferbloat, communicating endpoints, comparative evaluation, congestion control, cross-layer, Data communication, delay reduction, Delays, hardware interaction, head-of-line blocking, Internet, Internet latency reduction, Internet protocol networks, IP networks, latency, network operating systems, network structural arrangement, networks, operating system buffering, overuse inflicting latency, performance, performance bottleneck, protocols, queueing theory, queuing delay, queuing delays, round trip time, Routing, Routing protocols, Servers, servers placement, standards, suboptimal routes placement, taxonomy, telecommunication network routing, throughput maximization, transmission paths, Tutorials, utilization maximization},
+	pages = {2149--2196},
+	file = {IEEE Xplore Abstract Record:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/P7TPTL9T/6967689.html:text/html;IEEE Xplore Full Text PDF:/home/max/.zotero/zotero/zzt443zn.default/zotero/storage/YQG2RWR8/Briscoe et al. - 2016 - Reducing Internet Latency A Survey of Techniques .pdf:application/pdf}
+}
